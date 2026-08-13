@@ -1,3 +1,4 @@
+## I kindly request everyone to not to clone this repo as I am working on this project and it gonna take 6 more month to built an strong version of this!
 # Forge
 
 **A blazing-fast, cross-platform C++ developer CLI for understanding, managing, and automating development environments.**
