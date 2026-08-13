@@ -206,7 +206,7 @@ The project intentionally keeps its core lightweight and minimizes unnecessary d
 ### Clone
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/forge.git
+git clone https://github.com/suprimojha/forge.git
 cd forge
 ```
 
