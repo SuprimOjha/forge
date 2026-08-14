@@ -26,8 +26,7 @@ int runDoctor() {
         detectTool("Git", "git"),
         detectTool("CMake", "cmake"),
         detectTool("Python", "python"),
-        detectTool("Node.js", "node"),
-        detectTool("Docker", "docker")
+        detectTool("Node.js", "node")
     };
 
     std::cout << "Development Tools\n\n";
@@ -65,12 +64,9 @@ int runDoctor() {
             }
 
             if (tool.working) {
-
                 std::cout
                     << "  Status: Ready\n";
-
             } else {
-
                 std::cout
                     << "  Status: Installed but not responding\n";
             }
@@ -101,7 +97,18 @@ int runDoctor() {
         << tools.size()
         << " tools ready\n\n";
 
-    return 0;
+    /*
+     * Exit code:
+     *
+     * 0 = all tools ready
+     * 1 = one or more tools are missing/broken
+     */
+
+    if (workingCount == static_cast<int>(tools.size())) {
+        return 0;
+    }
+
+    return 1;
 }
 
 }
