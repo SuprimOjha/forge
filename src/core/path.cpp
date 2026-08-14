@@ -7,8 +7,6 @@
 
 namespace forge {
 
-namespace {
-
 std::string executeCommand(const std::string& command) {
 
     std::array<char, 256> buffer{};
@@ -16,8 +14,8 @@ std::string executeCommand(const std::string& command) {
 
 #ifdef _WIN32
 
-   const std::string fullCommand =
-    "cmd.exe /c \"" + command + " 2>nul\"";
+    const std::string fullCommand =
+        "cmd.exe /c \"" + command + " 2>nul\"";
 
     FILE* rawPipe =
         _popen(fullCommand.c_str(), "r");
@@ -68,8 +66,6 @@ std::string trim(const std::string& value) {
     );
 }
 
-}
-
 bool commandAvailable(const std::string& command) {
 
 #ifdef _WIN32
@@ -112,6 +108,9 @@ std::string findCommandPath(const std::string& command) {
         return trim(output);
     }
 
-    return trim(output.substr(0, newline));
+    return trim(
+        output.substr(0, newline)
+    );
 }
+
 }

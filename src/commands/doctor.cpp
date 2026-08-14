@@ -36,22 +36,28 @@ int runDoctor() {
 
     for (const auto& tool : tools) {
 
-        if (tool.installed) {
+       if (tool.installed) {
+    ++installedCount;
 
-            ++installedCount;
+    std::cout
+        << "✓ "
+        << tool.name
+        << "\n";
 
-            std::cout
-                << "✓ "
-                << tool.name
-                << "\n";
+    if (!tool.version.empty()) {
+        std::cout
+            << "  Version: "
+            << tool.version
+            << "\n";
+    }
 
-            if (!tool.path.empty()) {
+    if (!tool.path.empty()) {
+        std::cout
+            << "  Path: "
+            << tool.path
+            << "\n";
+    }
 
-                std::cout
-                    << "  Path: "
-                    << tool.path
-                    << "\n";
-            }
 
         } else {
 
