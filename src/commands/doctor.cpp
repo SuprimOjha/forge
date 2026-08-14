@@ -5,9 +5,18 @@
 #include <iostream>
 #include <vector>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 namespace forge {
 
 int runDoctor() {
+
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+#endif
 
     std::cout << "\n";
     std::cout << "Forge Doctor\n";
@@ -26,18 +35,13 @@ int runDoctor() {
     for (const auto& tool : tools) {
 
         if (tool.installed) {
-
-            std::cout
-                << "✓ "
-                << tool.name
-                << "\n";
-
+            std::cout << "✓ "
+                      << tool.name
+                      << "\n";
         } else {
-
-            std::cout
-                << "✗ "
-                << tool.name
-                << " not found\n";
+            std::cout << "✗ "
+                      << tool.name
+                      << " not found\n";
         }
     }
 
