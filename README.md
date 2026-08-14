@@ -1,3 +1,4 @@
+## I kindly request everyone to not to clone this repo as I am working on this project and it gonna take 6 more months to built an strong version of this!
 # Forge
 
 **A blazing-fast, cross-platform C++ developer CLI for understanding, managing, and automating development environments.**
@@ -206,7 +207,7 @@ The project intentionally keeps its core lightweight and minimizes unnecessary d
 ### Clone
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/forge.git
+git clone https://github.com/suprimojha/forge.git
 cd forge
 ```
 
