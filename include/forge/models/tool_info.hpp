@@ -5,10 +5,14 @@
 namespace forge {
 
 struct ToolInfo {
+
     std::string name;
     std::string command;
-    bool installed;
+
+    bool installed = false;
+
     std::string version;
+    std::string path;
 };
 
 }

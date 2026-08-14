@@ -2,14 +2,9 @@
 #include "forge/core/detector.hpp"
 #include "forge/models/tool_info.hpp"
 #include "forge/ui/output.hpp"
-#include "forge/commands/doctor.hpp"
-#include "forge/core/detector.hpp"
-#include "forge/models/tool_info.hpp"
-#include "forge/ui/output.hpp"
+
 #include <iostream>
 #include <vector>
-#include <vector>
-#include <iostream>
 
 namespace forge {
 
@@ -27,24 +22,48 @@ int runDoctor() {
         detectTool("Docker", "docker")
     };
 
-    ui::info("Development Tools");
-    std::cout << '\n';
+    std::cout << "Development Tools\n\n";
 
-    for (const auto& tool : tools) {
+    int installedCount = 0;
+
+    for (auto& tool : tools) {
 
         if (tool.installed) {
 
+            installedCount++;
+
+            tool.version =
+                detectToolVersion(tool.command);
+
             ui::success(tool.name);
+
+            if (!tool.version.empty()) {
+                std::cout
+                    << "  Version: "
+                    << tool.version
+                    << '\n';
+            }
+
+            if (!tool.path.empty()) {
+                std::cout
+                    << "  Path: "
+                    << tool.path
+                    << "\n\n";
+            }
 
         } else {
 
             ui::error(tool.name + " not found");
-
+            std::cout << '\n';
         }
-
     }
 
-    std::cout << '\n';
+    std::cout
+        << "Summary\n"
+        << installedCount
+        << "/"
+        << tools.size()
+        << " tools detected\n\n";
 
     return 0;
 }

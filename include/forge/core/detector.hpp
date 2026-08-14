@@ -11,4 +11,8 @@ ToolInfo detectTool(
     const std::string& command
 );
 
+std::string detectToolVersion(
+    const std::string& command
+);
+
 }
