@@ -29,6 +29,10 @@ ToolInfo detectTool(
             )
         );
 
+    if (!info.version.empty()) {
+        info.working = true;
+    }
+
     return info;
 }
 

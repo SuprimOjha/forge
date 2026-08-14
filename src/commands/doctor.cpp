@@ -33,48 +33,73 @@ int runDoctor() {
     std::cout << "Development Tools\n\n";
 
     int installedCount = 0;
+    int workingCount = 0;
 
     for (const auto& tool : tools) {
 
-       if (tool.installed) {
-    ++installedCount;
+        if (tool.installed) {
 
-    std::cout
-        << "✓ "
-        << tool.name
-        << "\n";
+            ++installedCount;
 
-    if (!tool.version.empty()) {
-        std::cout
-            << "  Version: "
-            << tool.version
-            << "\n";
-    }
+            if (tool.working) {
+                ++workingCount;
+            }
 
-    if (!tool.path.empty()) {
-        std::cout
-            << "  Path: "
-            << tool.path
-            << "\n";
-    }
+            std::cout
+                << "✓ "
+                << tool.name
+                << "\n";
 
+            if (!tool.version.empty()) {
+                std::cout
+                    << "  Version: "
+                    << tool.version
+                    << "\n";
+            }
+
+            if (!tool.path.empty()) {
+                std::cout
+                    << "  Path: "
+                    << tool.path
+                    << "\n";
+            }
+
+            if (tool.working) {
+
+                std::cout
+                    << "  Status: Ready\n";
+
+            } else {
+
+                std::cout
+                    << "  Status: Installed but not responding\n";
+            }
 
         } else {
 
             std::cout
                 << "✗ "
                 << tool.name
-                << " not found\n";
+                << "\n"
+                << "  Status: Not installed\n";
         }
 
         std::cout << "\n";
     }
 
+    std::cout << "Summary\n";
+
     std::cout
         << installedCount
         << "/"
         << tools.size()
-        << " development tools detected.\n\n";
+        << " tools installed\n";
+
+    std::cout
+        << workingCount
+        << "/"
+        << tools.size()
+        << " tools ready\n\n";
 
     return 0;
 }
