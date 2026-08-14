@@ -29,16 +29,12 @@ std::vector<std::string> getWindowsPaths(const std::string& command) {
             R"(C:\Program Files\CMake\bin\cmake.exe)"
         };
     }
-    else if (command == "python") {
-        paths = {
-            R"(C:\Python313\python.exe)",
-            R"(C:\Python312\python.exe)",
-            R"(C:\Python311\python.exe)",
-            R"(C:\Program Files\Python313\python.exe)",
-            R"(C:\Program Files\Python312\python.exe)",
-            R"(C:\Program Files\Python311\python.exe)"
-        };
-    }
+  else if (command == "python") {
+    paths = {
+        R"(C:\Users\User\AppData\Local\Programs\Python\Python312\python.exe)",
+        R"(C:\Users\User\AppData\Local\Programs\Python\Python311\python.exe)"
+    };
+}
     else if (command == "node") {
         paths = {
             R"(C:\Program Files\nodejs\node.exe)"
