@@ -1,18 +1,26 @@
 #include "forge/commands/doctor.hpp"
 #include "forge/core/detector.hpp"
 #include "forge/models/tool_info.hpp"
-#include "forge/ui/output.hpp"
 
 #include <iostream>
 #include <vector>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 namespace forge {
 
 int runDoctor() {
 
-    ui::init();
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+#endif
 
-    ui::header("Forge Doctor");
+    std::cout << "\n";
+    std::cout << "Forge Doctor\n";
+    std::cout << "────────────────────────────\n\n";
 
     std::vector<ToolInfo> tools = {
         detectTool("Git", "git"),
@@ -26,44 +34,41 @@ int runDoctor() {
 
     int installedCount = 0;
 
-    for (auto& tool : tools) {
+    for (const auto& tool : tools) {
 
         if (tool.installed) {
 
-            installedCount++;
+            ++installedCount;
 
-            tool.version =
-                detectToolVersion(tool.command);
-
-            ui::success(tool.name);
-
-            if (!tool.version.empty()) {
-                std::cout
-                    << "  Version: "
-                    << tool.version
-                    << '\n';
-            }
+            std::cout
+                << "✓ "
+                << tool.name
+                << "\n";
 
             if (!tool.path.empty()) {
+
                 std::cout
                     << "  Path: "
                     << tool.path
-                    << "\n\n";
+                    << "\n";
             }
 
         } else {
 
-            ui::error(tool.name + " not found");
-            std::cout << '\n';
+            std::cout
+                << "✗ "
+                << tool.name
+                << " not found\n";
         }
+
+        std::cout << "\n";
     }
 
     std::cout
-        << "Summary\n"
         << installedCount
         << "/"
         << tools.size()
-        << " tools detected\n\n";
+        << " development tools detected.\n\n";
 
     return 0;
 }

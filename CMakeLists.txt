@@ -12,12 +12,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(forge
     src/main.cpp
-
     src/commands/doctor.cpp
     src/commands/version.cpp
-
     src/core/detector.cpp
-
+    src/core/path.cpp
     src/ui/output.cpp
 )
 
