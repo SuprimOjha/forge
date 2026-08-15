@@ -5,6 +5,13 @@
 
 namespace forge {
 
+struct DependencyInfo {
+
+    std::string name;
+    std::string version;
+    bool development = false;
+};
+
 struct ProjectInfo {
 
     std::string name;
@@ -15,6 +22,7 @@ struct ProjectInfo {
 
     std::vector<std::string> detectedFiles;
     std::vector<std::string> frameworks;
+    std::vector<DependencyInfo> dependencies;
 
     bool gitRepository = false;
 };
