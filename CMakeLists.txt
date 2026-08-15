@@ -18,6 +18,7 @@ add_executable(forge
     src/core/path.cpp
     src/ui/output.cpp
     src/commands/config.cpp
+    src/commands/env.cpp
     src/core/config.cpp
 )
 
