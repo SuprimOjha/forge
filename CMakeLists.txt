@@ -17,6 +17,8 @@ add_executable(forge
     src/core/detector.cpp
     src/core/path.cpp
     src/ui/output.cpp
+    src/commands/config.cpp
+    src/core/config.cpp
 )
 
 target_include_directories(forge

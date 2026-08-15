@@ -1,5 +1,6 @@
 #include "forge/commands/doctor.hpp"
 #include "forge/commands/version.hpp"
+#include "forge/commands/config.hpp"
 
 #include <iostream>
 #include <string>
@@ -16,6 +17,7 @@ void printHelp() {
         << "Commands:\n"
         << "  doctor     Check development environment\n"
         << "  version    Show Forge version\n"
+        << "  config     Manage Forge configuration\n"
         << "  help       Show this help message\n\n"
 
         << "Global Options:\n"
@@ -139,6 +141,14 @@ int main(int argc, char* argv[]) {
         }
 
         return forge::runVersion();
+    }
+
+    /*
+     * Config command
+     */
+
+    if (command == "config") {
+        return forge::runConfig(argc, argv);
     }
 
     /*
