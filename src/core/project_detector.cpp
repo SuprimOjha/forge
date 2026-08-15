@@ -1,5 +1,6 @@
 #include "forge/core/project_detector.hpp"
 
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -11,11 +12,13 @@ namespace forge {
 
 namespace {
 
+/*
+ * Check whether a file contains a piece of text.
+ */
 bool fileContains(
     const fs::path& file,
     const std::string& text
 ) {
-
     std::ifstream input(file);
 
     if (!input.is_open()) {
@@ -35,6 +38,104 @@ bool fileContains(
 }
 
 
+/*
+ * Check whether a command is available.
+ */
+bool commandAvailable(
+    const std::string& command
+) {
+
+#ifdef _WIN32
+
+    const std::string check =
+        "where " + command + " >nul 2>&1";
+
+#else
+
+    const std::string check =
+        "command -v " + command +
+        " >/dev/null 2>&1";
+
+#endif
+
+    return std::system(check.c_str()) == 0;
+}
+
+
+/*
+ * Detect Node.js version requirement
+ * from package.json.
+ */
+std::string findNodeRequirement(
+    const fs::path& packageJson
+) {
+
+    std::ifstream input(packageJson);
+
+    if (!input.is_open()) {
+        return "";
+    }
+
+    std::string line;
+    bool inEngines = false;
+
+    while (std::getline(input, line)) {
+
+        if (line.find("\"engines\"") !=
+            std::string::npos) {
+
+            inEngines = true;
+            continue;
+        }
+
+        if (!inEngines) {
+            continue;
+        }
+
+        if (line.find("\"node\"") !=
+            std::string::npos) {
+
+            const std::size_t colon =
+                line.find(':');
+
+            if (colon == std::string::npos) {
+                return "";
+            }
+
+            const std::size_t start =
+                line.find('"', colon);
+
+            if (start == std::string::npos) {
+                return "";
+            }
+
+            const std::size_t end =
+                line.find('"', start + 1);
+
+            if (end == std::string::npos) {
+                return "";
+            }
+
+            return line.substr(
+                start + 1,
+                end - start - 1
+            );
+        }
+
+        if (line.find('}') !=
+            std::string::npos) {
+
+            inEngines = false;
+        }
+    }
+
+    return "";
+}
+
+
+/*
+ * Parse dependencies from package.json.
+ */
 std::vector<DependencyInfo> parseDependencies(
     const fs::path& packageJson
 ) {
@@ -58,7 +159,8 @@ std::vector<DependencyInfo> parseDependencies(
          * dependencies
          */
 
-        if (line.find("\"dependencies\"") != std::string::npos) {
+        if (line.find("\"dependencies\"") !=
+            std::string::npos) {
 
             inDependencies = true;
             inDevDependencies = false;
@@ -66,11 +168,13 @@ std::vector<DependencyInfo> parseDependencies(
             continue;
         }
 
+
         /*
          * devDependencies
          */
 
-        if (line.find("\"devDependencies\"") != std::string::npos) {
+        if (line.find("\"devDependencies\"") !=
+            std::string::npos) {
 
             inDependencies = false;
             inDevDependencies = true;
@@ -78,19 +182,25 @@ std::vector<DependencyInfo> parseDependencies(
             continue;
         }
 
+
         /*
-         * Ignore everything outside dependency sections
+         * Ignore everything outside
+         * dependency sections.
          */
 
-        if (!inDependencies && !inDevDependencies) {
+        if (!inDependencies &&
+            !inDevDependencies) {
+
             continue;
         }
 
+
         /*
-         * Detect end of dependency section
+         * Detect end of section.
          */
 
-        if (line.find('}') != std::string::npos) {
+        if (line.find('}') !=
+            std::string::npos) {
 
             inDependencies = false;
             inDevDependencies = false;
@@ -98,21 +208,26 @@ std::vector<DependencyInfo> parseDependencies(
             continue;
         }
 
+
         /*
-         * Find dependency name
+         * Find dependency name.
          */
 
         const std::size_t firstQuote =
             line.find('"');
 
-        if (firstQuote == std::string::npos) {
+        if (firstQuote ==
+            std::string::npos) {
+
             continue;
         }
 
         const std::size_t secondQuote =
             line.find('"', firstQuote + 1);
 
-        if (secondQuote == std::string::npos) {
+        if (secondQuote ==
+            std::string::npos) {
+
             continue;
         }
 
@@ -122,37 +237,46 @@ std::vector<DependencyInfo> parseDependencies(
                 secondQuote - firstQuote - 1
             );
 
+
         /*
-         * Find :
+         * Find colon.
          */
 
         const std::size_t colon =
             line.find(':', secondQuote);
 
-        if (colon == std::string::npos) {
+        if (colon ==
+            std::string::npos) {
+
             continue;
         }
 
+
         /*
-         * Find version
+         * Find version.
          */
 
         const std::size_t versionStart =
             line.find('"', colon);
 
-        if (versionStart == std::string::npos) {
+        if (versionStart ==
+            std::string::npos) {
+
             continue;
         }
 
         const std::size_t versionEnd =
             line.find('"', versionStart + 1);
 
-        if (versionEnd == std::string::npos) {
+        if (versionEnd ==
+            std::string::npos) {
+
             continue;
         }
 
+
         /*
-         * Create dependency
+         * Create dependency.
          */
 
         DependencyInfo dependency;
@@ -168,17 +292,19 @@ std::vector<DependencyInfo> parseDependencies(
         dependency.development =
             inDevDependencies;
 
-        dependencies.push_back(dependency);
+        dependencies.push_back(
+            dependency
+        );
     }
 
     return dependencies;
 }
 
-}
+} // anonymous namespace
 
 
 /*
- * Detect current project
+ * Detect current project.
  */
 
 ProjectInfo detectProject() {
@@ -187,6 +313,11 @@ ProjectInfo detectProject() {
 
     const fs::path currentPath =
         fs::current_path();
+
+
+    /*
+     * Basic information.
+     */
 
     info.path =
         currentPath.string();
@@ -205,11 +336,15 @@ ProjectInfo detectProject() {
      * Git
      */
 
-    if (fs::exists(currentPath / ".git")) {
+    if (fs::exists(
+            currentPath / ".git"
+        )) {
 
         info.gitRepository = true;
 
-        info.detectedFiles.push_back(".git");
+        info.detectedFiles.push_back(
+            ".git"
+        );
     }
 
 
@@ -226,21 +361,43 @@ ProjectInfo detectProject() {
             "package.json"
         );
 
+        info.type = "Node.js";
+
+
         /*
-         * Dependencies
+         * Dependencies.
          */
 
         info.dependencies =
             parseDependencies(packageJson);
 
-        info.type = "Node.js";
+
+        /*
+         * Node.js / npm availability.
+         */
+
+        info.nodeAvailable =
+            commandAvailable("node");
+
+        info.npmAvailable =
+            commandAvailable("npm");
 
 
         /*
-         * TypeScript
+         * Node.js version requirement.
          */
 
-        if (fs::exists(currentPath / "tsconfig.json")) {
+        info.requiredNodeVersion =
+            findNodeRequirement(packageJson);
+
+
+        /*
+         * TypeScript.
+         */
+
+        if (fs::exists(
+                currentPath / "tsconfig.json"
+            )) {
 
             info.detectedFiles.push_back(
                 "tsconfig.json"
@@ -251,10 +408,12 @@ ProjectInfo detectProject() {
 
 
         /*
-         * Package manager
+         * Package manager.
          */
 
-        if (fs::exists(currentPath / "package-lock.json")) {
+        if (fs::exists(
+                currentPath / "package-lock.json"
+            )) {
 
             info.detectedFiles.push_back(
                 "package-lock.json"
@@ -262,7 +421,9 @@ ProjectInfo detectProject() {
 
             info.packageManager = "npm";
 
-        } else if (fs::exists(currentPath / "yarn.lock")) {
+        } else if (fs::exists(
+                currentPath / "yarn.lock"
+            )) {
 
             info.detectedFiles.push_back(
                 "yarn.lock"
@@ -270,7 +431,9 @@ ProjectInfo detectProject() {
 
             info.packageManager = "yarn";
 
-        } else if (fs::exists(currentPath / "pnpm-lock.yaml")) {
+        } else if (fs::exists(
+                currentPath / "pnpm-lock.yaml"
+            )) {
 
             info.detectedFiles.push_back(
                 "pnpm-lock.yaml"
@@ -278,7 +441,9 @@ ProjectInfo detectProject() {
 
             info.packageManager = "pnpm";
 
-        } else if (fs::exists(currentPath / "bun.lock")) {
+        } else if (fs::exists(
+                currentPath / "bun.lock"
+            )) {
 
             info.detectedFiles.push_back(
                 "bun.lock"
@@ -286,7 +451,9 @@ ProjectInfo detectProject() {
 
             info.packageManager = "bun";
 
-        } else if (fs::exists(currentPath / "bun.lockb")) {
+        } else if (fs::exists(
+                currentPath / "bun.lockb"
+            )) {
 
             info.detectedFiles.push_back(
                 "bun.lockb"
@@ -297,14 +464,23 @@ ProjectInfo detectProject() {
 
 
         /*
-         * Next.js
+         * Next.js.
          */
 
         if (
-            fs::exists(currentPath / "next.config.js") ||
-            fs::exists(currentPath / "next.config.ts") ||
-            fs::exists(currentPath / "next.config.mjs") ||
-            fileContains(packageJson, "\"next\"")
+            fs::exists(
+                currentPath / "next.config.js"
+            ) ||
+            fs::exists(
+                currentPath / "next.config.ts"
+            ) ||
+            fs::exists(
+                currentPath / "next.config.mjs"
+            ) ||
+            fileContains(
+                packageJson,
+                "\"next\""
+            )
         ) {
 
             info.frameworks.push_back(
@@ -314,13 +490,20 @@ ProjectInfo detectProject() {
 
 
         /*
-         * Vite
+         * Vite.
          */
 
         if (
-            fs::exists(currentPath / "vite.config.js") ||
-            fs::exists(currentPath / "vite.config.ts") ||
-            fileContains(packageJson, "\"vite\"")
+            fs::exists(
+                currentPath / "vite.config.js"
+            ) ||
+            fs::exists(
+                currentPath / "vite.config.ts"
+            ) ||
+            fileContains(
+                packageJson,
+                "\"vite\""
+            )
         ) {
 
             info.frameworks.push_back(
@@ -330,10 +513,13 @@ ProjectInfo detectProject() {
 
 
         /*
-         * React
+         * React.
          */
 
-        if (fileContains(packageJson, "\"react\"")) {
+        if (fileContains(
+                packageJson,
+                "\"react\""
+            )) {
 
             info.frameworks.push_back(
                 "React"
@@ -342,7 +528,7 @@ ProjectInfo detectProject() {
 
 
         /*
-         * Create React App
+         * Create React App.
          */
 
         if (fileContains(
@@ -357,7 +543,7 @@ ProjectInfo detectProject() {
 
 
         /*
-         * Express
+         * Express.
          */
 
         if (fileContains(
@@ -373,40 +559,43 @@ ProjectInfo detectProject() {
 
 
     /*
-     * Python
+     * Python.
      */
 
-    if (fs::exists(currentPath / "requirements.txt")) {
+    if (fs::exists(
+            currentPath / "requirements.txt"
+        )) {
 
         info.detectedFiles.push_back(
             "requirements.txt"
         );
 
         if (info.type.empty()) {
-
             info.type = "Python";
         }
     }
 
-
-    if (fs::exists(currentPath / "pyproject.toml")) {
+    if (fs::exists(
+            currentPath / "pyproject.toml"
+        )) {
 
         info.detectedFiles.push_back(
             "pyproject.toml"
         );
 
         if (info.type.empty()) {
-
             info.type = "Python";
         }
     }
 
 
     /*
-     * Django
+     * Django.
      */
 
-    if (fs::exists(currentPath / "manage.py")) {
+    if (fs::exists(
+            currentPath / "manage.py"
+        )) {
 
         info.detectedFiles.push_back(
             "manage.py"
@@ -422,10 +611,12 @@ ProjectInfo detectProject() {
 
 
     /*
-     * C++
+     * C++ / CMake.
      */
 
-    if (fs::exists(currentPath / "CMakeLists.txt")) {
+    if (fs::exists(
+            currentPath / "CMakeLists.txt"
+        )) {
 
         info.detectedFiles.push_back(
             "CMakeLists.txt"
@@ -440,54 +631,56 @@ ProjectInfo detectProject() {
 
 
     /*
-     * Rust
+     * Rust.
      */
 
-    if (fs::exists(currentPath / "Cargo.toml")) {
+    if (fs::exists(
+            currentPath / "Cargo.toml"
+        )) {
 
         info.detectedFiles.push_back(
             "Cargo.toml"
         );
 
         if (info.type.empty()) {
-
             info.type = "Rust";
         }
     }
 
 
     /*
-     * Go
+     * Go.
      */
 
-    if (fs::exists(currentPath / "go.mod")) {
+    if (fs::exists(
+            currentPath / "go.mod"
+        )) {
 
         info.detectedFiles.push_back(
             "go.mod"
         );
 
         if (info.type.empty()) {
-
             info.type = "Go";
         }
     }
 
 
     /*
-     * Docker
+     * Docker.
      */
 
-    if (fs::exists(currentPath / "Dockerfile")) {
+    if (fs::exists(
+            currentPath / "Dockerfile"
+        )) {
 
         info.detectedFiles.push_back(
             "Dockerfile"
         );
     }
 
-
     if (fs::exists(
-            currentPath /
-            "docker-compose.yml"
+            currentPath / "docker-compose.yml"
         )) {
 
         info.detectedFiles.push_back(
@@ -497,16 +690,14 @@ ProjectInfo detectProject() {
 
 
     /*
-     * Unknown project
+     * Unknown project.
      */
 
     if (info.type.empty()) {
-
         info.type = "Unknown";
     }
-
 
     return info;
 }
 
-}
+} // namespace forge

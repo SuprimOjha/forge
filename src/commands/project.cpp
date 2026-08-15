@@ -127,7 +127,50 @@ int runProject() {
             std::cout << "\n";
         }
     }
+    /*
+ * Environment
+ */
 
+std::cout << "\nEnvironment:\n";
+
+if (project.type == "Node.js" ||
+    project.type == "TypeScript") {
+
+    if (project.nodeAvailable) {
+
+        std::cout
+            << "  ✓ Node.js detected\n";
+
+    } else {
+
+        std::cout
+            << "  ✗ Node.js not found\n";
+    }
+
+    if (project.packageManager == "npm") {
+
+        if (project.npmAvailable) {
+
+            std::cout
+                << "  ✓ npm detected\n";
+
+        } else {
+
+            std::cout
+                << "  ✗ npm not found\n";
+        }
+    }
+}
+    if (!project.requiredNodeVersion.empty()) {
+
+    std::cout
+        << "\nRequirements:\n";
+
+    std::cout
+        << "  Node.js "
+        << project.requiredNodeVersion
+        << "\n";
+}
 
     std::cout << "\n";
 
