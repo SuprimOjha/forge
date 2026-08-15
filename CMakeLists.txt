@@ -21,6 +21,8 @@ add_executable(forge
     src/commands/env.cpp
     src/commands/check.cpp
     src/core/config.cpp
+    src/commands/project.cpp
+    src/core/project_detector.cpp
 )
 
 target_include_directories(forge

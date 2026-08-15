@@ -3,6 +3,7 @@
 #include "forge/commands/config.hpp"
 #include "forge/commands/env.hpp"
 #include "forge/commands/check.hpp"
+#include "forge/commands/project.hpp"
 #include <iostream>
 #include <string>
 
@@ -25,7 +26,8 @@ void printHelp() {
         << "  -h, --help       Show help message\n"
         << "  --version        Show Forge version\n"
         << "  env        Show development environment\n"
-        << "  check      Check if development environment is ready\n";
+        << "  check      Check if development environment is ready\n"
+        <<"  project    Detect the current project\n";
 }
 
 void printDoctorHelp() {
@@ -157,9 +159,14 @@ int main(int argc, char* argv[]) {
     if (command == "env") {
     return forge::runEnv();
     }
+    
     if (command == "check") {
     return forge::runCheck();
     }
+
+    if (command == "project") {
+    return forge::runProject();
+     }
     /*
      * Unknown command
      */
