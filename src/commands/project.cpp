@@ -1,4 +1,3 @@
-
 #include "forge/commands/project.hpp"
 #include "forge/core/project_detector.hpp"
 
@@ -12,7 +11,9 @@ int runProject() {
 
     std::cout << "\n";
     std::cout << "Forge Project\n";
-    std::cout << "────────────────────────────\n\n";
+    std::cout
+        << "--------------------------------------------\n\n";
+
 
     /*
      * Basic project information
@@ -36,17 +37,20 @@ int runProject() {
     std::cout << "Detected:\n";
 
     if (project.gitRepository) {
-        std::cout << "✓ Git repository\n";
+
+        std::cout
+            << "  [OK] Git repository\n";
     }
 
-    for (const auto& file : project.detectedFiles) {
+    for (const auto& file :
+         project.detectedFiles) {
 
         if (file == ".git") {
             continue;
         }
 
         std::cout
-            << "✓ "
+            << "  [OK] "
             << file
             << "\n";
     }
@@ -56,7 +60,8 @@ int runProject() {
      * Project type
      */
 
-    std::cout << "\nProject Type:\n";
+    std::cout
+        << "\nProject Type:\n";
 
     std::cout
         << "  "
@@ -93,7 +98,7 @@ int runProject() {
              project.frameworks) {
 
             std::cout
-                << "  ✓ "
+                << "  [OK] "
                 << framework
                 << "\n";
         }
@@ -113,7 +118,7 @@ int runProject() {
              project.dependencies) {
 
             std::cout
-                << "  ✓ "
+                << "  [OK] "
                 << dependency.name
                 << " "
                 << dependency.version;
@@ -127,50 +132,239 @@ int runProject() {
             std::cout << "\n";
         }
     }
+
+
     /*
- * Environment
- */
+     * Environment
+     */
 
-std::cout << "\nEnvironment:\n";
+    std::cout
+        << "\nEnvironment:\n";
 
-if (project.type == "Node.js" ||
-    project.type == "TypeScript") {
 
-    if (project.nodeAvailable) {
+    /*
+     * Node.js
+     */
 
-        std::cout
-            << "  ✓ Node.js detected\n";
+    if (project.type == "Node.js" ||
+        project.type == "TypeScript") {
 
-    } else {
-
-        std::cout
-            << "  ✗ Node.js not found\n";
-    }
-
-    if (project.packageManager == "npm") {
-
-        if (project.npmAvailable) {
+        if (project.nodeAvailable) {
 
             std::cout
-                << "  ✓ npm detected\n";
+                << "  [OK] Node.js detected\n";
 
         } else {
 
             std::cout
-                << "  ✗ npm not found\n";
+                << "  [ERROR] Node.js not found\n";
+        }
+
+
+        /*
+         * npm
+         */
+
+        if (project.packageManager == "npm") {
+
+            if (project.npmAvailable) {
+
+                std::cout
+                    << "  [OK] npm detected\n";
+
+            } else {
+
+                std::cout
+                    << "  [ERROR] npm not found\n";
+            }
         }
     }
-}
+
+
+    /*
+     * Node.js requirement
+     */
+
     if (!project.requiredNodeVersion.empty()) {
 
-    std::cout
-        << "\nRequirements:\n";
+        std::cout
+            << "\nRequirements:\n";
+
+        std::cout
+            << "  Node.js "
+            << project.requiredNodeVersion
+            << "\n";
+    }
+
+
+    /*
+     * Project Health
+     */
+
+    int healthChecks = 0;
+    int passedChecks = 0;
 
     std::cout
-        << "  Node.js "
-        << project.requiredNodeVersion
-        << "\n";
-}
+        << "\nHealth:\n";
+
+
+    /*
+     * Dependencies check
+     */
+
+    if (project.type == "Node.js" ||
+        project.type == "TypeScript") {
+
+        healthChecks++;
+
+        if (!project.dependencies.empty()) {
+
+            passedChecks++;
+
+            std::cout
+                << "  [OK] Dependencies detected\n";
+
+        } else {
+
+            std::cout
+                << "  [ERROR] No dependencies detected\n";
+        }
+    }
+
+
+    /*
+     * Package manager check
+     */
+
+    if (project.type == "Node.js" ||
+        project.type == "TypeScript") {
+
+        healthChecks++;
+
+        if (!project.packageManager.empty()) {
+
+            passedChecks++;
+
+            std::cout
+                << "  [OK] Package manager detected\n";
+
+        } else {
+
+            std::cout
+                << "  [ERROR] Package manager not detected\n";
+        }
+    }
+
+
+    /*
+     * Node.js check
+     */
+
+    if (project.type == "Node.js" ||
+        project.type == "TypeScript") {
+
+        healthChecks++;
+
+        if (project.nodeAvailable) {
+
+            passedChecks++;
+
+            std::cout
+                << "  [OK] Node.js available\n";
+
+        } else {
+
+            std::cout
+                << "  [ERROR] Node.js unavailable\n";
+        }
+    }
+
+
+    /*
+     * npm check
+     */
+
+    if (project.packageManager == "npm") {
+
+        healthChecks++;
+
+        if (project.npmAvailable) {
+
+            passedChecks++;
+
+            std::cout
+                << "  [OK] npm available\n";
+
+        } else {
+
+            std::cout
+                << "  [ERROR] npm unavailable\n";
+        }
+    }
+
+
+    /*
+     * Git check
+     */
+
+    healthChecks++;
+
+    if (project.gitRepository) {
+
+        passedChecks++;
+
+        std::cout
+            << "  [OK] Git repository detected\n";
+
+    } else {
+
+        std::cout
+            << "  [WARNING] Git repository not detected\n";
+    }
+
+
+    /*
+     * Health summary
+     */
+
+    std::cout
+        << "\nStatus:\n";
+
+    if (healthChecks == 0) {
+
+        std::cout
+            << "  [WARNING] No health checks available\n";
+
+    } else if (passedChecks == healthChecks) {
+
+        std::cout
+            << "  [OK] Project looks healthy\n";
+
+    } else {
+
+        std::cout
+            << "  [WARNING] Project has "
+            << (healthChecks - passedChecks)
+            << " issue(s)\n";
+    }
+
+
+    /*
+     * Health score
+     */
+
+    if (healthChecks > 0) {
+
+        const int healthPercentage =
+            (passedChecks * 100) /
+            healthChecks;
+
+        std::cout
+            << "  Score: "
+            << healthPercentage
+            << "%\n";
+    }
+
 
     std::cout << "\n";
 
