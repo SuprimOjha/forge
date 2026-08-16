@@ -19,11 +19,15 @@ struct ProjectInfo {
     std::string type;
 
     std::string packageManager;
-
     std::string requiredNodeVersion;
 
     bool nodeAvailable = false;
     bool npmAvailable = false;
+
+    bool nodeModulesExists = false;
+
+    int installedDependencies = 0;
+    int missingDependencies = 0;
 
     std::vector<std::string> detectedFiles;
     std::vector<std::string> frameworks;

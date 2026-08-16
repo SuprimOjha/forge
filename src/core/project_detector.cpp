@@ -336,16 +336,44 @@ ProjectInfo detectProject() {
      * Git
      */
 
-    if (fs::exists(
-            currentPath / ".git"
-        )) {
+    /*
+ * Git repository detection
+ *
+ * Search the current directory and
+ * parent directories for .git.
+ */
+
+fs::path gitPath = currentPath;
+
+while (!gitPath.empty()) {
+
+    if (fs::exists(gitPath / ".git")) {
 
         info.gitRepository = true;
 
-        info.detectedFiles.push_back(
-            ".git"
-        );
+        /*
+         * Only show .git when it is inside
+         * the current project directory.
+         */
+
+        if (gitPath == currentPath) {
+
+            info.detectedFiles.push_back(
+                ".git"
+            );
+        }
+
+        break;
     }
+
+    const fs::path parent = gitPath.parent_path();
+
+    if (parent == gitPath) {
+        break;
+    }
+
+    gitPath = parent;
+}
 
 
     /*
@@ -371,7 +399,36 @@ ProjectInfo detectProject() {
         info.dependencies =
             parseDependencies(packageJson);
 
+        
+                       /*
+ * Check node_modules
+ */
 
+         const fs::path nodeModules =
+          currentPath / "node_modules";
+
+           info.nodeModulesExists =
+            fs::exists(nodeModules) &&
+          fs::is_directory(nodeModules);
+
+         if (info.nodeModulesExists) {
+
+          for (const auto& dependency :
+            info.dependencies) {
+ 
+            const fs::path dependencyPath =
+              nodeModules / dependency.name;
+
+              if (fs::exists(dependencyPath)) {
+ 
+              info.installedDependencies++;
+ 
+             } else {
+
+               info.missingDependencies++;
+             }
+            }
+            } 
         /*
          * Node.js / npm availability.
          */

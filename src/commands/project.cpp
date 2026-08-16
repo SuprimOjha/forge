@@ -132,7 +132,51 @@ int runProject() {
             std::cout << "\n";
         }
     }
+     /*
+ * Dependency Health
+ */
 
+if (project.type == "Node.js" ||
+    project.type == "TypeScript") {
+
+    std::cout
+        << "\nDependency Health:\n";
+
+    if (!project.nodeModulesExists) {
+
+        std::cout
+            << "  [ERROR] node_modules not found\n";
+
+        std::cout
+            << "  Suggestion: run npm install\n";
+
+    } else {
+
+        std::cout
+            << "  [OK] node_modules found\n";
+
+        std::cout
+            << "  Installed: "
+            << project.installedDependencies
+            << "\n";
+
+        if (project.missingDependencies > 0) {
+
+            std::cout
+                << "  [ERROR] Missing: "
+                << project.missingDependencies
+                << "\n";
+
+            std::cout
+                << "  Suggestion: run npm install\n";
+
+        } else {
+
+            std::cout
+                << "  [OK] All detected dependencies installed\n";
+        }
+    }
+}
 
     /*
      * Environment
