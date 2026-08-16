@@ -18,6 +18,19 @@ struct ScriptInfo {
     std::string command;
 };
 
+struct ProjectIssue {
+
+    enum class Severity {
+        Warning,
+        Error
+    };
+
+    Severity severity;
+
+    std::string message;
+    std::string suggestion;
+};
+
 struct ProjectInfo {
 
     std::string name;
@@ -39,6 +52,8 @@ struct ProjectInfo {
     std::vector<std::string> frameworks;
     std::vector<DependencyInfo> dependencies;
     std::vector<ScriptInfo> scripts;
+
+    std::vector<ProjectIssue> issues;
 
     bool gitRepository = false;
 };

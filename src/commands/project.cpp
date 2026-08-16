@@ -5,12 +5,50 @@
 
 namespace forge {
 
+namespace {
+
+void printIssue(
+    const ProjectIssue& issue
+) {
+
+    if (issue.severity ==
+        ProjectIssue::Severity::Error) {
+
+        std::cout
+            << "  [ERROR] "
+            << issue.message
+            << "\n";
+
+    } else {
+
+        std::cout
+            << "  [WARNING] "
+            << issue.message
+            << "\n";
+    }
+
+    if (!issue.suggestion.empty()) {
+
+        std::cout
+            << "  Suggestion: "
+            << issue.suggestion
+            << "\n";
+    }
+}
+
+}
+
+
 int runProject() {
 
-    const ProjectInfo project = detectProject();
+    const ProjectInfo project =
+        detectProject();
 
     std::cout << "\n";
-    std::cout << "Forge Project\n";
+
+    std::cout
+        << "Forge Project\n";
+
     std::cout
         << "--------------------------------------------\n\n";
 
@@ -34,7 +72,8 @@ int runProject() {
      * Detected files
      */
 
-    std::cout << "Detected:\n";
+    std::cout
+        << "Detected:\n";
 
     if (project.gitRepository) {
 
@@ -54,23 +93,27 @@ int runProject() {
             << file
             << "\n";
     }
-     /*
- * Git information
- */
 
-if (project.gitRepository) {
 
-    std::cout
-        << "\nGit:\n";
+    /*
+     * Git
+     */
 
-    std::cout
-        << "  [OK] Repository detected\n";
+    if (project.gitRepository) {
 
-    std::cout
-        << "  Root: "
-        << project.gitRoot
-        << "\n";
-}
+        std::cout
+            << "\nGit:\n";
+
+        std::cout
+            << "  [OK] Repository detected\n";
+
+        std::cout
+            << "  Root: "
+            << project.gitRoot
+            << "\n";
+    }
+
+
     /*
      * Project type
      */
@@ -147,71 +190,80 @@ if (project.gitRepository) {
             std::cout << "\n";
         }
     }
-     /*
- * Dependency Health
- */
 
-if (project.type == "Node.js" ||
-    project.type == "TypeScript") {
 
-    std::cout
-        << "\nDependency Health:\n";
+    /*
+     * Dependency Health
+     */
 
-    if (!project.nodeModulesExists) {
+    if (project.type == "Node.js" ||
+        project.type == "TypeScript") {
 
         std::cout
-            << "  [ERROR] node_modules not found\n";
+            << "\nDependency Health:\n";
 
-        std::cout
-            << "  Suggestion: run npm install\n";
-
-    } else {
-
-        std::cout
-            << "  [OK] node_modules found\n";
-
-        std::cout
-            << "  Installed: "
-            << project.installedDependencies
-            << "\n";
-
-        if (project.missingDependencies > 0) {
+        if (!project.nodeModulesExists) {
 
             std::cout
-                << "  [ERROR] Missing: "
-                << project.missingDependencies
-                << "\n";
+                << "  [ERROR] node_modules not found\n";
 
             std::cout
-                << "  Suggestion: run npm install\n";
+                << "  Suggestion: run "
+                << project.packageManager
+                << " install\n";
 
         } else {
 
             std::cout
-                << "  [OK] All detected dependencies installed\n";
+                << "  [OK] node_modules found\n";
+
+            std::cout
+                << "  Installed: "
+                << project.installedDependencies
+                << "\n";
+
+            if (project.missingDependencies > 0) {
+
+                std::cout
+                    << "  [ERROR] Missing: "
+                    << project.missingDependencies
+                    << "\n";
+
+                std::cout
+                    << "  Suggestion: run "
+                    << project.packageManager
+                    << " install\n";
+
+            } else {
+
+                std::cout
+                    << "  [OK] All detected dependencies installed\n";
+            }
         }
     }
+
+
     /*
- * Scripts
- */
+     * Scripts
+     */
 
-if (!project.scripts.empty()) {
-
-    std::cout
-        << "\nScripts:\n";
-
-    for (const auto& script :
-         project.scripts) {
+    if (!project.scripts.empty()) {
 
         std::cout
-            << "  [OK] "
-            << script.name
-            << " -> "
-            << script.command
-            << "\n";
+            << "\nScripts:\n";
+
+        for (const auto& script :
+             project.scripts) {
+
+            std::cout
+                << "  [OK] "
+                << script.name
+                << " -> "
+                << script.command
+                << "\n";
+        }
     }
-}
-}
+
 
     /*
      * Environment
@@ -219,11 +271,6 @@ if (!project.scripts.empty()) {
 
     std::cout
         << "\nEnvironment:\n";
-
-
-    /*
-     * Node.js
-     */
 
     if (project.type == "Node.js" ||
         project.type == "TypeScript") {
@@ -239,10 +286,6 @@ if (!project.scripts.empty()) {
                 << "  [ERROR] Node.js not found\n";
         }
 
-
-        /*
-         * npm
-         */
 
         if (project.packageManager == "npm") {
 
@@ -277,18 +320,19 @@ if (!project.scripts.empty()) {
 
 
     /*
-     * Project Health
+     * Health
      */
 
     int healthChecks = 0;
     int passedChecks = 0;
+
 
     std::cout
         << "\nHealth:\n";
 
 
     /*
-     * Dependencies check
+     * Dependencies
      */
 
     if (project.type == "Node.js" ||
@@ -312,7 +356,7 @@ if (!project.scripts.empty()) {
 
 
     /*
-     * Package manager check
+     * Package manager
      */
 
     if (project.type == "Node.js" ||
@@ -336,7 +380,7 @@ if (!project.scripts.empty()) {
 
 
     /*
-     * Node.js check
+     * Node.js
      */
 
     if (project.type == "Node.js" ||
@@ -360,7 +404,7 @@ if (!project.scripts.empty()) {
 
 
     /*
-     * npm check
+     * npm
      */
 
     if (project.packageManager == "npm") {
@@ -383,7 +427,31 @@ if (!project.scripts.empty()) {
 
 
     /*
-     * Git check
+     * node_modules
+     */
+
+    if (project.type == "Node.js" ||
+        project.type == "TypeScript") {
+
+        healthChecks++;
+
+        if (project.nodeModulesExists) {
+
+            passedChecks++;
+
+            std::cout
+                << "  [OK] Dependencies installed\n";
+
+        } else {
+
+            std::cout
+                << "  [ERROR] Dependencies not installed\n";
+        }
+    }
+
+
+    /*
+     * Git
      */
 
     healthChecks++;
@@ -403,7 +471,24 @@ if (!project.scripts.empty()) {
 
 
     /*
-     * Health summary
+     * Issues
+     */
+
+    if (!project.issues.empty()) {
+
+        std::cout
+            << "\nIssues:\n";
+
+        for (const auto& issue :
+             project.issues) {
+
+            printIssue(issue);
+        }
+    }
+
+
+    /*
+     * Status
      */
 
     std::cout
@@ -445,7 +530,8 @@ if (!project.scripts.empty()) {
     }
 
 
-    std::cout << "\n";
+    std::cout
+        << "\n";
 
     return 0;
 }
