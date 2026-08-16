@@ -270,7 +270,20 @@ std::vector<DependencyInfo> parseDependencies(
 
         dependency.development =
             inDevDependencies;
+        /*
+ * Dependency status
+ */
 
+if (dependency.name == "react-scripts") {
+
+    dependency.status =
+        "WARNING: Legacy Create React App dependency";
+
+} else {
+
+    dependency.status =
+        "OK";
+}
         dependencies.push_back(
             dependency
         );

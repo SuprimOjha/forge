@@ -163,34 +163,75 @@ int runProject() {
     }
 
 
-    /*
-     * Dependencies
-     */
+/*
+ * Dependencies
+ */
 
-    if (!project.dependencies.empty()) {
+if (!project.dependencies.empty()) {
+
+    std::cout
+        << "\nDependencies:\n";
+
+    for (const auto& dependency :
+         project.dependencies) {
 
         std::cout
-            << "\nDependencies:\n";
+            << "  ";
 
-        for (const auto& dependency :
-             project.dependencies) {
+        if (dependency.status.rfind(
+                "WARNING:",
+                0
+            ) == 0) {
+
+            std::cout << "[WARNING] ";
+
+        } else if (
+            dependency.status.rfind(
+                "ERROR:",
+                0
+            ) == 0
+        ) {
+
+            std::cout << "[ERROR] ";
+
+        } else {
+
+            std::cout << "[OK] ";
+        }
+
+        std::cout
+            << dependency.name
+            << " "
+            << dependency.version;
+
+        if (dependency.development) {
 
             std::cout
-                << "  [OK] "
-                << dependency.name
-                << " "
-                << dependency.version;
+                << " (dev)";
+        }
 
-            if (dependency.development) {
+        std::cout << "\n";
 
-                std::cout
-                    << " (dev)";
-            }
+        /*
+         * Display dependency warning/error
+         */
 
-            std::cout << "\n";
+        if (dependency.status.rfind(
+                "WARNING:",
+                0
+            ) == 0 ||
+            dependency.status.rfind(
+                "ERROR:",
+                0
+            ) == 0) {
+
+            std::cout
+                << "    "
+                << dependency.status
+                << "\n";
         }
     }
-
+}
 
     /*
      * Dependency Health

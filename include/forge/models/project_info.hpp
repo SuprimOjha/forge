@@ -10,6 +10,8 @@ struct DependencyInfo {
     std::string name;
     std::string version;
     bool development = false;
+
+    std::string status;
 };
 
 
