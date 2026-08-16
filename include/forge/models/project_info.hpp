@@ -12,6 +12,7 @@ struct DependencyInfo {
     bool development = false;
 };
 
+
 struct ScriptInfo {
 
     std::string name;
@@ -19,7 +20,6 @@ struct ScriptInfo {
 };
 
 struct ProjectIssue {
-
     enum class Severity {
         Warning,
         Error

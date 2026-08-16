@@ -397,7 +397,225 @@ std::vector<ScriptInfo> parseScripts(
 
     return scripts;
 }
+/*
+ * Generate project diagnostics.
+ */
+void generateProjectIssues(
+    ProjectInfo& info
+) {
 
+    /*
+     * Git
+     */
+
+    if (!info.gitRepository) {
+
+        ProjectIssue issue;
+
+        issue.severity =
+            ProjectIssue::Severity::Warning;
+
+        issue.message =
+            "Git repository not detected";
+
+        issue.suggestion =
+            "Initialize Git with: git init";
+
+        info.issues.push_back(issue);
+    }
+
+
+    /*
+     * Node.js
+     */
+
+    if (info.type == "Node.js" ||
+        info.type == "TypeScript") {
+
+        if (!info.nodeAvailable) {
+
+            ProjectIssue issue;
+
+            issue.severity =
+                ProjectIssue::Severity::Error;
+
+            issue.message =
+                "Node.js not found";
+
+            issue.suggestion =
+                "Install Node.js and make sure it is available in PATH";
+
+            info.issues.push_back(issue);
+        }
+
+
+        /*
+         * npm
+         */
+
+        if (info.packageManager == "npm" &&
+            !info.npmAvailable) {
+
+            ProjectIssue issue;
+
+            issue.severity =
+                ProjectIssue::Severity::Error;
+
+            issue.message =
+                "npm not found";
+
+            issue.suggestion =
+                "Install Node.js, which includes npm";
+
+            info.issues.push_back(issue);
+        }
+
+
+        /*
+         * node_modules
+         */
+
+        if (!info.nodeModulesExists) {
+
+            ProjectIssue issue;
+
+            issue.severity =
+                ProjectIssue::Severity::Error;
+
+            issue.message =
+                "node_modules not found";
+
+            if (info.packageManager == "npm") {
+
+                issue.suggestion =
+                    "Run: npm install";
+
+            } else if (
+                info.packageManager == "yarn"
+            ) {
+
+                issue.suggestion =
+                    "Run: yarn install";
+
+            } else if (
+                info.packageManager == "pnpm"
+            ) {
+
+                issue.suggestion =
+                    "Run: pnpm install";
+
+            } else if (
+                info.packageManager == "bun"
+            ) {
+
+                issue.suggestion =
+                    "Run: bun install";
+
+            } else {
+
+                issue.suggestion =
+                    "Install the project's dependencies";
+            }
+
+            info.issues.push_back(issue);
+        }
+
+
+        /*
+         * Missing dependencies
+         */
+
+        if (info.missingDependencies > 0) {
+
+            ProjectIssue issue;
+
+            issue.severity =
+                ProjectIssue::Severity::Error;
+
+            issue.message =
+                std::to_string(
+                    info.missingDependencies
+                ) +
+                " project dependency(s) missing";
+
+            if (info.packageManager == "npm") {
+
+                issue.suggestion =
+                    "Run: npm install";
+
+            } else if (
+                info.packageManager == "yarn"
+            ) {
+
+                issue.suggestion =
+                    "Run: yarn install";
+
+            } else if (
+                info.packageManager == "pnpm"
+            ) {
+
+                issue.suggestion =
+                    "Run: pnpm install";
+
+            } else if (
+                info.packageManager == "bun"
+            ) {
+
+                issue.suggestion =
+                    "Run: bun install";
+
+            } else {
+
+                issue.suggestion =
+                    "Install the missing dependencies";
+            }
+
+            info.issues.push_back(issue);
+        }
+
+
+        /*
+         * No dependencies
+         */
+
+        if (info.dependencies.empty()) {
+
+            ProjectIssue issue;
+
+            issue.severity =
+                ProjectIssue::Severity::Warning;
+
+            issue.message =
+                "No dependencies detected";
+
+            issue.suggestion =
+                "Check package.json dependencies";
+
+            info.issues.push_back(issue);
+        }
+
+
+        /*
+         * No package manager
+         */
+
+        if (info.packageManager.empty()) {
+
+            ProjectIssue issue;
+
+            issue.severity =
+                ProjectIssue::Severity::Warning;
+
+            issue.message =
+                "Package manager not detected";
+
+            issue.suggestion =
+                "Add a package manager lock file";
+
+            info.issues.push_back(issue);
+        }
+    }
+}
 } // anonymous namespace
 
 
@@ -833,10 +1051,15 @@ ProjectInfo detectProject() {
      * Unknown project.
      */
     if (info.type.empty()) {
-        info.type = "Unknown";
-    }
+    info.type = "Unknown";
+}
 
-    return info;
+/*
+ * Generate diagnostics.
+ */
+generateProjectIssues(info);
+
+return info;
 }
 
 } // namespace forge
