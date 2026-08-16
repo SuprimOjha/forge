@@ -191,6 +191,26 @@ if (project.type == "Node.js" ||
                 << "  [OK] All detected dependencies installed\n";
         }
     }
+    /*
+ * Scripts
+ */
+
+if (!project.scripts.empty()) {
+
+    std::cout
+        << "\nScripts:\n";
+
+    for (const auto& script :
+         project.scripts) {
+
+        std::cout
+            << "  [OK] "
+            << script.name
+            << " -> "
+            << script.command
+            << "\n";
+    }
+}
 }
 
     /*

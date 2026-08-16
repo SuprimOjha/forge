@@ -12,18 +12,24 @@ struct DependencyInfo {
     bool development = false;
 };
 
+struct ScriptInfo {
+
+    std::string name;
+    std::string command;
+};
+
 struct ProjectInfo {
 
     std::string name;
     std::string path;
     std::string type;
-    std::string gitRoot;
+
     std::string packageManager;
     std::string requiredNodeVersion;
+    std::string gitRoot;
 
     bool nodeAvailable = false;
     bool npmAvailable = false;
-
     bool nodeModulesExists = false;
 
     int installedDependencies = 0;
@@ -32,6 +38,7 @@ struct ProjectInfo {
     std::vector<std::string> detectedFiles;
     std::vector<std::string> frameworks;
     std::vector<DependencyInfo> dependencies;
+    std::vector<ScriptInfo> scripts;
 
     bool gitRepository = false;
 };

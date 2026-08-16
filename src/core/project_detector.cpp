@@ -28,7 +28,6 @@ bool fileContains(
     std::string line;
 
     while (std::getline(input, line)) {
-
         if (line.find(text) != std::string::npos) {
             return true;
         }
@@ -69,7 +68,6 @@ bool commandAvailable(
 std::string findNodeRequirement(
     const fs::path& packageJson
 ) {
-
     std::ifstream input(packageJson);
 
     if (!input.is_open()) {
@@ -139,7 +137,6 @@ std::string findNodeRequirement(
 std::vector<DependencyInfo> parseDependencies(
     const fs::path& packageJson
 ) {
-
     std::vector<DependencyInfo> dependencies;
 
     std::ifstream input(packageJson);
@@ -158,7 +155,6 @@ std::vector<DependencyInfo> parseDependencies(
         /*
          * dependencies
          */
-
         if (line.find("\"dependencies\"") !=
             std::string::npos) {
 
@@ -168,11 +164,9 @@ std::vector<DependencyInfo> parseDependencies(
             continue;
         }
 
-
         /*
          * devDependencies
          */
-
         if (line.find("\"devDependencies\"") !=
             std::string::npos) {
 
@@ -182,23 +176,19 @@ std::vector<DependencyInfo> parseDependencies(
             continue;
         }
 
-
         /*
          * Ignore everything outside
          * dependency sections.
          */
-
         if (!inDependencies &&
             !inDevDependencies) {
 
             continue;
         }
 
-
         /*
-         * Detect end of section.
+         * End of dependency section.
          */
-
         if (line.find('}') !=
             std::string::npos) {
 
@@ -208,11 +198,9 @@ std::vector<DependencyInfo> parseDependencies(
             continue;
         }
 
-
         /*
          * Find dependency name.
          */
-
         const std::size_t firstQuote =
             line.find('"');
 
@@ -237,11 +225,9 @@ std::vector<DependencyInfo> parseDependencies(
                 secondQuote - firstQuote - 1
             );
 
-
         /*
          * Find colon.
          */
-
         const std::size_t colon =
             line.find(':', secondQuote);
 
@@ -251,11 +237,9 @@ std::vector<DependencyInfo> parseDependencies(
             continue;
         }
 
-
         /*
          * Find version.
          */
-
         const std::size_t versionStart =
             line.find('"', colon);
 
@@ -273,11 +257,6 @@ std::vector<DependencyInfo> parseDependencies(
 
             continue;
         }
-
-
-        /*
-         * Create dependency.
-         */
 
         DependencyInfo dependency;
 
@@ -300,13 +279,131 @@ std::vector<DependencyInfo> parseDependencies(
     return dependencies;
 }
 
+
+/*
+ * Parse scripts from package.json.
+ */
+std::vector<ScriptInfo> parseScripts(
+    const fs::path& packageJson
+) {
+    std::vector<ScriptInfo> scripts;
+
+    std::ifstream input(packageJson);
+
+    if (!input.is_open()) {
+        return scripts;
+    }
+
+    std::string line;
+    bool inScripts = false;
+
+    while (std::getline(input, line)) {
+
+        /*
+         * Find scripts section.
+         */
+        if (line.find("\"scripts\"") !=
+            std::string::npos) {
+
+            inScripts = true;
+            continue;
+        }
+
+        if (!inScripts) {
+            continue;
+        }
+
+        /*
+         * End of scripts section.
+         */
+        if (line.find('}') !=
+            std::string::npos) {
+
+            break;
+        }
+
+        /*
+         * Find script name.
+         */
+        const std::size_t firstQuote =
+            line.find('"');
+
+        if (firstQuote ==
+            std::string::npos) {
+
+            continue;
+        }
+
+        const std::size_t secondQuote =
+            line.find('"', firstQuote + 1);
+
+        if (secondQuote ==
+            std::string::npos) {
+
+            continue;
+        }
+
+        const std::string name =
+            line.substr(
+                firstQuote + 1,
+                secondQuote - firstQuote - 1
+            );
+
+        /*
+         * Find colon.
+         */
+        const std::size_t colon =
+            line.find(':', secondQuote);
+
+        if (colon ==
+            std::string::npos) {
+
+            continue;
+        }
+
+        /*
+         * Find command.
+         */
+        const std::size_t valueStart =
+            line.find('"', colon);
+
+        if (valueStart ==
+            std::string::npos) {
+
+            continue;
+        }
+
+        const std::size_t valueEnd =
+            line.find('"', valueStart + 1);
+
+        if (valueEnd ==
+            std::string::npos) {
+
+            continue;
+        }
+
+        ScriptInfo script;
+
+        script.name = name;
+
+        script.command =
+            line.substr(
+                valueStart + 1,
+                valueEnd - valueStart - 1
+            );
+
+        scripts.push_back(script);
+    }
+
+    return scripts;
+}
+
 } // anonymous namespace
 
 
 /*
  * Detect current project.
  */
-
 ProjectInfo detectProject() {
 
     ProjectInfo info;
@@ -318,7 +415,6 @@ ProjectInfo detectProject() {
     /*
      * Basic information.
      */
-
     info.path =
         currentPath.string();
 
@@ -333,58 +429,46 @@ ProjectInfo detectProject() {
 
 
     /*
-     * Git
+     * Git repository detection.
+     *
+     * Search current directory and
+     * parent directories.
      */
+    fs::path gitPath = currentPath;
 
-    /*
- * Git repository detection.
- *
- * Search the current directory and all
- * parent directories for a Git repository.
- */
+    while (!gitPath.empty()) {
 
-fs::path gitPath = currentPath;
+        if (fs::exists(gitPath / ".git")) {
 
-while (!gitPath.empty()) {
+            info.gitRepository = true;
 
-    if (fs::exists(gitPath / ".git")) {
+            info.gitRoot =
+                gitPath.string();
 
-        info.gitRepository = true;
+            if (gitPath == currentPath) {
 
-        info.gitRoot =
-            gitPath.string();
+                info.detectedFiles.push_back(
+                    ".git"
+                );
+            }
 
-        /*
-         * Only show .git as a detected file
-         * when it belongs directly to the
-         * current project directory.
-         */
-
-        if (gitPath == currentPath) {
-
-            info.detectedFiles.push_back(
-                ".git"
-            );
+            break;
         }
 
-        break;
+        const fs::path parent =
+            gitPath.parent_path();
+
+        if (parent == gitPath) {
+            break;
+        }
+
+        gitPath = parent;
     }
-
-    const fs::path parent =
-        gitPath.parent_path();
-
-    if (parent == gitPath) {
-        break;
-    }
-
-    gitPath = parent;
-}
 
 
     /*
-     * Node.js
+     * Node.js.
      */
-
     const fs::path packageJson =
         currentPath / "package.json";
 
@@ -400,44 +484,50 @@ while (!gitPath.empty()) {
         /*
          * Dependencies.
          */
-
         info.dependencies =
             parseDependencies(packageJson);
 
-        
-                       /*
- * Check node_modules
- */
 
-         const fs::path nodeModules =
-          currentPath / "node_modules";
+        /*
+         * Scripts.
+         */
+        info.scripts =
+            parseScripts(packageJson);
 
-           info.nodeModulesExists =
+
+        /*
+         * node_modules.
+         */
+        const fs::path nodeModules =
+            currentPath / "node_modules";
+
+        info.nodeModulesExists =
             fs::exists(nodeModules) &&
-          fs::is_directory(nodeModules);
+            fs::is_directory(nodeModules);
 
-         if (info.nodeModulesExists) {
+        if (info.nodeModulesExists) {
 
-          for (const auto& dependency :
-            info.dependencies) {
- 
-            const fs::path dependencyPath =
-              nodeModules / dependency.name;
+            for (const auto& dependency :
+                 info.dependencies) {
 
-              if (fs::exists(dependencyPath)) {
- 
-              info.installedDependencies++;
- 
-             } else {
+                const fs::path dependencyPath =
+                    nodeModules / dependency.name;
 
-               info.missingDependencies++;
-             }
+                if (fs::exists(dependencyPath)) {
+
+                    info.installedDependencies++;
+
+                } else {
+
+                    info.missingDependencies++;
+                }
             }
-            } 
+        }
+
+
         /*
          * Node.js / npm availability.
          */
-
         info.nodeAvailable =
             commandAvailable("node");
 
@@ -448,7 +538,6 @@ while (!gitPath.empty()) {
         /*
          * Node.js version requirement.
          */
-
         info.requiredNodeVersion =
             findNodeRequirement(packageJson);
 
@@ -456,7 +545,6 @@ while (!gitPath.empty()) {
         /*
          * TypeScript.
          */
-
         if (fs::exists(
                 currentPath / "tsconfig.json"
             )) {
@@ -472,7 +560,6 @@ while (!gitPath.empty()) {
         /*
          * Package manager.
          */
-
         if (fs::exists(
                 currentPath / "package-lock.json"
             )) {
@@ -528,7 +615,6 @@ while (!gitPath.empty()) {
         /*
          * Next.js.
          */
-
         if (
             fs::exists(
                 currentPath / "next.config.js"
@@ -554,7 +640,6 @@ while (!gitPath.empty()) {
         /*
          * Vite.
          */
-
         if (
             fs::exists(
                 currentPath / "vite.config.js"
@@ -577,7 +662,6 @@ while (!gitPath.empty()) {
         /*
          * React.
          */
-
         if (fileContains(
                 packageJson,
                 "\"react\""
@@ -592,7 +676,6 @@ while (!gitPath.empty()) {
         /*
          * Create React App.
          */
-
         if (fileContains(
                 packageJson,
                 "\"react-scripts\""
@@ -607,7 +690,6 @@ while (!gitPath.empty()) {
         /*
          * Express.
          */
-
         if (fileContains(
                 packageJson,
                 "\"express\""
@@ -623,7 +705,6 @@ while (!gitPath.empty()) {
     /*
      * Python.
      */
-
     if (fs::exists(
             currentPath / "requirements.txt"
         )) {
@@ -636,6 +717,7 @@ while (!gitPath.empty()) {
             info.type = "Python";
         }
     }
+
 
     if (fs::exists(
             currentPath / "pyproject.toml"
@@ -654,7 +736,6 @@ while (!gitPath.empty()) {
     /*
      * Django.
      */
-
     if (fs::exists(
             currentPath / "manage.py"
         )) {
@@ -675,7 +756,6 @@ while (!gitPath.empty()) {
     /*
      * C++ / CMake.
      */
-
     if (fs::exists(
             currentPath / "CMakeLists.txt"
         )) {
@@ -695,7 +775,6 @@ while (!gitPath.empty()) {
     /*
      * Rust.
      */
-
     if (fs::exists(
             currentPath / "Cargo.toml"
         )) {
@@ -713,7 +792,6 @@ while (!gitPath.empty()) {
     /*
      * Go.
      */
-
     if (fs::exists(
             currentPath / "go.mod"
         )) {
@@ -731,7 +809,6 @@ while (!gitPath.empty()) {
     /*
      * Docker.
      */
-
     if (fs::exists(
             currentPath / "Dockerfile"
         )) {
@@ -740,6 +817,7 @@ while (!gitPath.empty()) {
             "Dockerfile"
         );
     }
+
 
     if (fs::exists(
             currentPath / "docker-compose.yml"
@@ -754,7 +832,6 @@ while (!gitPath.empty()) {
     /*
      * Unknown project.
      */
-
     if (info.type.empty()) {
         info.type = "Unknown";
     }
