@@ -337,10 +337,10 @@ ProjectInfo detectProject() {
      */
 
     /*
- * Git repository detection
+ * Git repository detection.
  *
- * Search the current directory and
- * parent directories for .git.
+ * Search the current directory and all
+ * parent directories for a Git repository.
  */
 
 fs::path gitPath = currentPath;
@@ -351,9 +351,13 @@ while (!gitPath.empty()) {
 
         info.gitRepository = true;
 
+        info.gitRoot =
+            gitPath.string();
+
         /*
-         * Only show .git when it is inside
-         * the current project directory.
+         * Only show .git as a detected file
+         * when it belongs directly to the
+         * current project directory.
          */
 
         if (gitPath == currentPath) {
@@ -366,7 +370,8 @@ while (!gitPath.empty()) {
         break;
     }
 
-    const fs::path parent = gitPath.parent_path();
+    const fs::path parent =
+        gitPath.parent_path();
 
     if (parent == gitPath) {
         break;

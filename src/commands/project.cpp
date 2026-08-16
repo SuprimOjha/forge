@@ -54,8 +54,23 @@ int runProject() {
             << file
             << "\n";
     }
+     /*
+ * Git information
+ */
 
+if (project.gitRepository) {
 
+    std::cout
+        << "\nGit:\n";
+
+    std::cout
+        << "  [OK] Repository detected\n";
+
+    std::cout
+        << "  Root: "
+        << project.gitRoot
+        << "\n";
+}
     /*
      * Project type
      */

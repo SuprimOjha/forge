@@ -17,7 +17,7 @@ struct ProjectInfo {
     std::string name;
     std::string path;
     std::string type;
-
+    std::string gitRoot;
     std::string packageManager;
     std::string requiredNodeVersion;
 
