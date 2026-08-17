@@ -8,7 +8,7 @@
 #include <string>
 #include <iostream>
 
-void printHelp() {j
+void printHelp() {
 
     std::cout
         << "\n"
