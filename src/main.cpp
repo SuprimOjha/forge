@@ -4,8 +4,9 @@
 #include "forge/commands/env.hpp"
 #include "forge/commands/check.hpp"
 #include "forge/commands/project.hpp"
-#include <iostream>
+#include "forge/commands/fix.hpp"
 #include <string>
+#include <iostream>
 
 void printHelp() {
 
@@ -167,6 +168,10 @@ int main(int argc, char* argv[]) {
     if (command == "project") {
     return forge::runProject();
      }
+
+    if (command == "fix") {
+    return forge::runFix();
+}
     /*
      * Unknown command
      */
