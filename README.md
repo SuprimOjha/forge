@@ -1,213 +1,281 @@
-## I kindly request everyone to not to clone this repo as I am working on this project and it gonna take few more months to build an strong version of this!
 # Forge
 
-**A blazing-fast, cross-platform C++ developer CLI for understanding, managing, and automating development environments.**
+**Developer Project Diagnostics & Repair CLI**
 
-Forge helps developers detect projects, inspect their development environment, and streamline common workflows through one fast, native command-line tool.
+Forge is a C++ developer tool that analyzes software projects, detects common configuration and dependency problems, and provides actionable diagnostics and fixes.
 
-> **Status:** 🚧 Early Development
+> **Current release: v0.1.0 — First Public MVP**
+
+Forge is being built with a long-term goal: make project setup, diagnosis, and maintenance dramatically easier for developers.
 
 ---
 
-## Why Forge?
+## ✨ What Forge Does
 
-Modern software projects often depend on a large collection of tools, runtimes, package managers, databases, containers, and frameworks.
+Forge inspects a project and builds a picture of its development environment.
 
-A developer may need to check:
+It can currently detect:
 
-* Is Git installed?
-* Which version of Python is available?
-* Is Node.js installed?
-* Is CMake configured correctly?
-* What framework is this project using?
-* Which dependencies are missing?
-* How should this project be built?
-* How should the development server be started?
+* 📁 Project files
+* 🐙 Git repositories
+* 🟢 Node.js projects
+* 📦 Package managers
+* ⚛️ Frameworks
+* 📚 Dependencies
+* 📜 npm scripts
+* 🧩 Dependency health
+* 💻 Development environment availability
+* 🩺 Project health
+* ⚠️ Potential project issues
+* 🔧 Automatically fixable problems
 
-Forge aims to bring these checks and workflows into a single, fast, developer-friendly CLI.
+---
+
+## 🚀 Example
+
+Run Forge inside a project:
 
 ```bash
-forge doctor
+forge project
 ```
 
-Instead of manually checking your environment, Forge analyzes it for you.
-
----
-
-## Features
-
-### 🔍 Environment Detection
-
-Detect development tools and runtimes installed on your system.
+Example output:
 
 ```text
-Forge Doctor
-────────────────────────────
+Forge Project
+--------------------------------------------
 
-Development Tools
+Project: web-ui
+Path:    D:\cyber_demo\web-ui
 
-✓ Git
-✓ CMake
-✓ Python
-✓ Node.js
-✓ C++ Compiler
+Detected:
+  [OK] Git repository
+  [OK] package.json
+  [OK] package-lock.json
 
-Environment
+Git:
+  [OK] Repository detected
+  Root: D:\cyber_demo
 
-✓ Windows x64
+Project Type:
+  Node.js
 
-Everything looks good.
+Package Manager:
+  npm
+
+Frameworks:
+  [OK] React
+  [OK] Create React App
+
+Dependencies:
+  [OK] react ^19.2.4
+  [OK] react-dom ^19.2.4
+  [OK] axios ^1.13.6
+
+Dependency Health:
+  [OK] node_modules found
+  Installed: 9
+  [OK] All detected dependencies installed
+
+Scripts:
+  [OK] start -> react-scripts start
+  [OK] build -> react-scripts build
+  [OK] test -> react-scripts test
+
+Environment:
+  [OK] Node.js detected
+  [OK] npm detected
+
+Health:
+  [OK] Dependencies detected
+  [OK] Package manager detected
+  [OK] Node.js available
+  [OK] npm available
+  [OK] Dependencies installed
+  [OK] Git repository detected
+
+Status:
+  [OK] Project looks healthy
+  Score: 100%
 ```
-
-### 🧠 Project Detection
-
-Forge will automatically identify technologies used by a project.
-
-Planned detection includes:
-
-* C / C++
-* Python
-* JavaScript / TypeScript
-* Rust
-* Go
-* Java
-* React
-* Next.js
-* Django
-* Node.js
-* Docker
-* CMake
-* Cargo
-* npm / pnpm / yarn
-
-### ⚡ Native Performance
-
-Forge is written in modern C++ with a focus on:
-
-* Fast startup
-* Low memory usage
-* Efficient filesystem operations
-* Native process execution
-* Cross-platform compatibility
-
-### 🛠️ Developer Workflows
-
-Planned commands include:
-
-```bash
-forge init
-forge doctor
-forge build
-forge test
-forge dev
-forge clean
-```
-
-The goal is to make common development workflows simple and consistent.
 
 ---
 
-## Example
+## 🔧 Fix Problems Automatically
 
-Navigate into an existing project:
+Forge can detect problems that can be repaired automatically.
 
-```bash
-cd my-project
-```
-
-Run:
+For example:
 
 ```bash
-forge doctor
+forge fix
 ```
 
-Forge analyzes the project and environment:
+If dependencies are missing:
 
 ```text
-Forge Doctor
-────────────────────────────
+Forge Fix
+--------------------------------------------
 
-Project
+Project: web-ui
 
-✓ Git repository
-✓ Next.js project
-✓ TypeScript
-✓ Docker
+Issues detected:
 
-Development Environment
+[ERROR] node_modules not found
+  Suggestion: Run: npm install
 
-✓ Node.js
-✓ npm
-✓ Git
-✓ Docker
+Fix available:
+  [1] Install Node.js dependencies
+      Command: npm install
 
-Configuration
+Run npm install now? [y/N]:
+```
 
-✓ package.json
-⚠ .env.example not found
+Forge is designed to move beyond simply **reporting problems** toward actually **helping developers resolve them**.
 
-Project appears healthy.
+---
+
+## 🩺 Project Diagnostics
+
+Forge separates project detection from project health analysis.
+
+It can identify issues such as:
+
+```text
+[ERROR] node_modules not found
+Suggestion: Run: npm install
+```
+
+It can also identify dependency-specific warnings:
+
+```text
+[WARNING] react-scripts 5.0.1
+  WARNING: Legacy Create React App dependency
+```
+
+This allows developers to understand not only **what exists in a project**, but also **what may need attention**.
+
+---
+
+## 🧠 Health Score
+
+Forge provides a simple project health score.
+
+For example:
+
+```text
+Status:
+  [OK] Project looks healthy
+  Score: 100%
+```
+
+When an issue is detected:
+
+```text
+Status:
+  [WARNING] Project has 1 issue(s)
+  Score: 83%
+```
+
+The goal is to give developers a quick overview of project health without manually checking every configuration.
+
+---
+
+## 🛠️ Commands
+
+### `forge project`
+
+Analyze the current project.
+
+```bash
+forge project
+```
+
+Displays:
+
+* Project information
+* Detected files
+* Git information
+* Project type
+* Package manager
+* Frameworks
+* Dependencies
+* Dependency health
+* Scripts
+* Environment
+* Diagnostics
+* Health score
+
+### `forge fix`
+
+Detect and repair supported project problems.
+
+```bash
+forge fix
+```
+
+Forge asks for confirmation before executing available fixes.
+
+### `forge doctor`
+
+Run Forge's environment/project diagnostics.
+
+```bash
+forge doctor
 ```
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
-Forge is designed around a modular architecture so that new languages, frameworks, tools, and workflows can be added without making the core CLI difficult to maintain.
+Forge is written in **C++** and uses **CMake** as its build system.
+
+The project is organized around separate responsibilities:
 
 ```text
 Forge
 │
 ├── CLI
-│
-├── Commands
-│   ├── doctor
-│   ├── init
-│   ├── build
-│   ├── test
-│   ├── dev
-│   └── clean
+│   └── Command handling
 │
 ├── Core
-│   ├── Project Detection
-│   ├── Environment Detection
-│   ├── Process Management
-│   ├── Filesystem
-│   └── Configuration
+│   └── Project detection
 │
-└── Platform Layer
-    ├── Windows
-    ├── Linux
-    └── macOS
+├── Project Analysis
+│   ├── Project type
+│   ├── Frameworks
+│   ├── Dependencies
+│   ├── Scripts
+│   └── Git
+│
+├── Diagnostics
+│   └── Project issues
+│
+└── Fixes
+    └── Automatic repairs
 ```
 
----
-
-## Tech Stack
-
-Forge is built with:
-
-* **C++20**
-* **CMake**
-* **Git**
-* **GitHub Actions**
-
-The project intentionally keeps its core lightweight and minimizes unnecessary dependencies.
+This architecture is intended to allow Forge to grow into a much larger developer platform without putting all functionality into one command.
 
 ---
 
-## Building From Source
+## 📦 Building From Source
 
 ### Requirements
 
-* C++20-compatible compiler
-* CMake 3.20+
-* Git
+Currently, building Forge from source requires a C++17-compatible compiler and CMake.
+
+On Windows, the project has been developed and tested using:
+
+* C++
+* CMake
+* MinGW/MSYS2
+* UCRT64
 
 ### Clone
 
 ```bash
-git clone https://github.com/suprimojha/forge.git
+git clone https://github.com/SuprimOjha/forge.git
 cd forge
 ```
 
@@ -220,148 +288,133 @@ cmake -S . -B build
 ### Build
 
 ```bash
-cmake --build build --config Release
+cmake --build build
 ```
 
-### Run
-
-On Windows:
-
-```powershell
-.\build\Release\forge.exe doctor
-```
-
-On Linux/macOS:
-
-```bash
-./build/forge doctor
-```
+The resulting executable will be located in the build directory.
 
 ---
 
-## Roadmap
+## 🖥️ Windows
 
-Forge is currently in early development.
-
-### Phase 1 — Core CLI
-
-* [x] Basic CLI
-* [x] `forge doctor`
-* [x] Basic tool detection
-* [ ] Version detection
-* [ ] Better error reporting
-
-### Phase 2 — Project Intelligence
-
-* [ ] Project type detection
-* [ ] Language detection
-* [ ] Framework detection
-* [ ] Package manager detection
-* [ ] Configuration validation
-
-### Phase 3 — Developer Workflows
-
-* [ ] `forge init`
-* [ ] `forge build`
-* [ ] `forge test`
-* [ ] `forge dev`
-* [ ] `forge clean`
-* [ ] Project configuration
-
-### Phase 4 — Cross-Platform
-
-* [ ] Windows
-* [ ] Linux
-* [ ] macOS
-* [ ] Automated builds
-* [ ] Release binaries
-
-### Phase 5 — Ecosystem
-
-* [ ] Plugin system
-* [ ] Docker integration
-* [ ] Database tooling
-* [ ] Cloud integrations
-* [ ] Community plugins
-
-### Phase 6 — Intelligent Development
-
-* [ ] Advanced project analysis
-* [ ] Dependency diagnostics
-* [ ] Automated recommendations
-* [ ] Optional AI integrations
-
----
-
-## Contributing
-
-Forge is being built as an open-source project, and contributions are welcome.
-
-Before submitting a pull request:
-
-1. Fork the repository.
-2. Create a feature branch.
-3. Make your changes.
-4. Add or update tests where appropriate.
-5. Build the project successfully.
-6. Open a pull request describing your changes.
+Forge currently runs as a command-line developer tool on Windows.
 
 Example:
 
-```bash
-git checkout -b feature/project-detection
+```powershell
+.\build\forge.exe project
 ```
 
-Then:
+The current public release is distributed as source code through GitHub.
 
-```bash
-git add .
-git commit -m "feat: add project detection"
-git push origin feature/project-detection
+> A dedicated Windows installer and package-manager distribution are intentionally not part of v0.1.0.
+
+---
+
+## 📈 Roadmap
+
+Forge v0.1.0 is only the beginning.
+
+### Phase 1 — Project Intelligence
+
+* [x] Project detection
+* [x] Git detection
+* [x] Package manager detection
+* [x] Framework detection
+* [x] Dependency detection
+* [x] Script detection
+* [x] Environment detection
+* [x] Dependency health
+* [x] Project diagnostics
+* [x] Health scoring
+
+### Phase 2 — Automated Repair
+
+* [x] Detect fixable problems
+* [x] Interactive fix confirmation
+* [x] Dependency installation
+* [ ] More automatic repairs
+* [ ] Safer repair planning
+* [ ] Repair verification
+* [ ] Detailed repair reports
+
+### Phase 3 — Developer Intelligence
+
+* [ ] Better project detection
+* [ ] Python project support
+* [ ] C/C++ project analysis
+* [ ] TypeScript-specific analysis
+* [ ] Configuration diagnostics
+* [ ] Build-system diagnostics
+* [ ] Security-oriented project checks
+* [ ] Performance diagnostics
+
+### Phase 4 — Forge Platform
+
+Long-term ideas include:
+
+* Project-wide diagnostics
+* Intelligent troubleshooting
+* Automated environment setup
+* Dependency upgrade assistance
+* Build failure analysis
+* CI/CD diagnostics
+* Developer workflow automation
+* Cross-platform support
+* A richer plugin/extension architecture
+
+---
+
+## 🎯 Vision
+
+Most developer tools tell you **what went wrong**.
+
+Forge aims to go further:
+
+```text
+Detect
+   ↓
+Understand
+   ↓
+Diagnose
+   ↓
+Explain
+   ↓
+Fix
+   ↓
+Verify
 ```
 
----
-
-## Development Principles
-
-Forge follows a few core principles:
-
-**Fast**
-Startup and common operations should remain fast.
-
-**Simple**
-Commands should be easy to understand and remember.
-
-**Portable**
-Forge should work consistently across major desktop operating systems.
-
-**Extensible**
-New languages, frameworks, and tools should be easy to integrate.
-
-**Developer-first**
-Features should solve real problems rather than add complexity for its own sake.
-
-**Open source**
-The core project should remain transparent and community-driven.
+The long-term goal is for Forge to become a developer assistant that can understand the state of a software project and help bring it back to a healthy state with minimal manual work.
 
 ---
 
-## License
+## 🤝 Contributing
 
-Forge is released under the **MIT License**.
+Forge is currently an early-stage project.
 
-See [`LICENSE`](LICENSE) for the full license text.
+Issues, ideas, experiments, and contributions are welcome.
 
----
-
-## Project Status
-
-Forge is currently an experimental open-source project under active development.
-
-The architecture and command-line interface may change as the project evolves.
-
-If you find Forge useful, consider giving the repository a ⭐ and contributing to its development.
+If you find a bug or have an idea for improving Forge, open an issue on GitHub.
 
 ---
 
-**Built with C++ for developers who build things.**
+## 📄 License
+
+See the `LICENSE` file in this repository for licensing information.
+
+---
+
+## ⭐ Project Status
+
+**Forge v0.1.0**
+
+This is the **first public MVP release**.
+
+Forge is actively under development, and its architecture and CLI may change significantly as new capabilities are added.
+
+If you find the project interesting, consider giving it a ⭐ on GitHub and following its development.
+
+---
+
+**Built by Suprim Ojha**
