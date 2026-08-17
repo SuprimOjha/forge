@@ -11,9 +11,11 @@ struct DependencyInfo {
     std::string version;
     bool development = false;
 
+    bool warning = false;
+    std::string warningMessage;
     std::string status;
-};
 
+};
 
 struct ScriptInfo {
 
