@@ -358,7 +358,24 @@ if (!project.dependencies.empty()) {
             << project.requiredNodeVersion
             << "\n";
     }
+   /*
+ * Recommendations
+ */
 
+if (!project.recommendations.empty()) {
+
+    std::cout
+        << "\nRecommendations:\n";
+
+    for (const auto& recommendation :
+         project.recommendations) {
+
+        std::cout
+            << "  [!] "
+            << recommendation
+            << "\n";
+    }
+}
 
     /*
      * Health

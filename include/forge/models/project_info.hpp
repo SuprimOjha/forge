@@ -58,7 +58,7 @@ struct ProjectInfo {
     std::vector<ScriptInfo> scripts;
 
     std::vector<ProjectIssue> issues;
-
+    std::vector<std::string> recommendations;
     bool gitRepository = false;
 };
 

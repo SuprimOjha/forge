@@ -628,6 +628,37 @@ void generateProjectIssues(
             info.issues.push_back(issue);
         }
     }
+    /*
+ * Generate recommendations
+ */
+
+info.recommendations.clear();
+
+for (const auto& issue : info.issues) {
+
+    if (issue.message == "node_modules not found") {
+
+        info.recommendations.push_back(
+            "Run: npm install"
+        );
+    }
+
+    if (issue.message.find("react-scripts") !=
+        std::string::npos) {
+
+        info.recommendations.push_back(
+            "Consider migrating from Create React App to Vite"
+        );
+    }
+
+    if (issue.message.find("Git repository") !=
+        std::string::npos) {
+
+        info.recommendations.push_back(
+            "Initialize a Git repository with: git init"
+        );
+    }
+}
 }
 } // anonymous namespace
 
