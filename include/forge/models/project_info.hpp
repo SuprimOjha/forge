@@ -34,6 +34,12 @@ struct ProjectIssue {
     std::string message;
     std::string suggestion;
 };
+struct FixAction {
+
+    std::string title;
+    std::string description;
+    std::string command;
+};
 
 struct ProjectInfo {
 

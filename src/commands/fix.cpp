@@ -67,65 +67,93 @@ int runFix() {
         std::cout << "\n";
     }
 
-    bool missingNodeModules = false;
+   bool missingNodeModules = false;
 
-    for (const auto& issue :
-         project.issues) {
+for (const auto& issue :
+     project.issues) {
 
-        if (issue.message ==
-            "node_modules not found") {
+    if (issue.message ==
+        "node_modules not found") {
 
-            missingNodeModules = true;
-            break;
-        }
+        missingNodeModules = true;
+        break;
     }
+}
 
-    if (missingNodeModules &&
-        project.packageManager == "npm") {
+if (missingNodeModules &&
+    project.packageManager == "npm") {
+
+    FixAction action;
+
+    action.title =
+        "Install Node.js dependencies";
+
+    action.description =
+        "Install dependencies declared in package.json.";
+
+    action.command =
+        "npm install";
+
+    std::cout
+        << "Fix available:\n";
+
+    std::cout
+        << "  [1] "
+        << action.title
+        << "\n";
+
+    std::cout
+        << "      "
+        << action.description
+        << "\n";
+
+    std::cout
+        << "      Command: "
+        << action.command
+        << "\n\n";
+
+    std::cout
+        << "Run this fix now? [y/N]: ";
+
+    char answer;
+    std::cin >> answer;
+
+    if (answer == 'y' ||
+        answer == 'Y') {
 
         std::cout
-            << "Fix available:\n";
+            << "\nRunning: "
+            << action.command
+            << "\n\n";
 
-        std::cout
-            << "  [1] Install Node.js dependencies\n";
+        const int result =
+            std::system(
+                action.command.c_str()
+            );
 
-        std::cout
-            << "      Command: npm install\n\n";
-
-        std::cout
-            << "Run npm install now? [y/N]: ";
-
-        char answer;
-        std::cin >> answer;
-
-        if (answer == 'y' ||
-            answer == 'Y') {
+        if (result == 0) {
 
             std::cout
-                << "\nRunning npm install...\n\n";
-
-            const int result =
-                std::system("npm install");
-
-            if (result == 0) {
-
-                std::cout
-                    << "\n[OK] Dependencies installed successfully.\n";
-
-            } else {
-
-                std::cout
-                    << "\n[ERROR] npm install failed.\n";
-
-                return 1;
-            }
+                << "\n[OK] "
+                << action.title
+                << " completed successfully.\n";
 
         } else {
 
             std::cout
-                << "\n[INFO] No changes made.\n";
+                << "\n[ERROR] "
+                << action.title
+                << " failed.\n";
+
+            return 1;
         }
+
+    } else {
+
+        std::cout
+            << "\n[INFO] No changes made.\n";
     }
+}
 
     if (!project.gitRepository) {
 
