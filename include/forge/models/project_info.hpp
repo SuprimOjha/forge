@@ -60,6 +60,13 @@ struct ProjectInfo {
     bool npmAvailable = false;
     bool nodeModulesExists = false;
 
+    // CMake / C++ metadata
+    bool cmakeAvailable = false;
+    bool cmakeConfigured = false;
+    std::string cmakeGenerator;
+    std::string cxxStandard;
+    std::string cmakeMinimumVersion;
+
     int installedDependencies = 0;
     int missingDependencies = 0;
 
