@@ -1,178 +1,89 @@
 #include "forge/commands/fix.hpp"
 #include "forge/core/project_detector.hpp"
+#include "forge/core/fix_engine.hpp"
 
-#include <cstdlib>
-#include <filesystem>
 #include <iostream>
-
-namespace fs = std::filesystem;
 
 namespace forge {
 
 int runFix() {
+    ProjectInfo project = detectProject();
 
-    const ProjectInfo project = detectProject();
-
-    std::cout << "\n";
-    std::cout << "Forge Fix\n";
-    std::cout
-        << "--------------------------------------------\n\n";
-
-    std::cout
-        << "Project: "
-        << project.name
-        << "\n\n";
+    std::cout << "\nForge Fix\n";
+    std::cout << "--------------------------------------------\n\n";
+    std::cout << "Project: " << project.name << "\n\n";
 
     if (project.issues.empty()) {
-
-        std::cout
-            << "[OK] No fixes required\n";
-
-        std::cout
-            << "Project is healthy.\n\n";
-
+        std::cout << "[OK] No fixes required\n";
+        std::cout << "Project is healthy.\n\n";
         return 0;
     }
 
-    std::cout
-        << "Issues detected:\n\n";
-
-    for (const auto& issue :
-         project.issues) {
-
-        if (issue.severity ==
-            ProjectIssue::Severity::Error) {
-
-            std::cout
-                << "[ERROR] "
-                << issue.message
-                << "\n";
-
+    std::cout << "Issues detected:\n\n";
+    for (const auto& issue : project.issues) {
+        if (issue.severity == ProjectIssue::Severity::Error) {
+            std::cout << "[ERROR] " << issue.message << "\n";
         } else {
-
-            std::cout
-                << "[WARNING] "
-                << issue.message
-                << "\n";
+            std::cout << "[WARNING] " << issue.message << "\n";
         }
 
         if (!issue.suggestion.empty()) {
-
-            std::cout
-                << "  Suggestion: "
-                << issue.suggestion
-                << "\n";
+            std::cout << "  Suggestion: " << issue.suggestion << "\n";
         }
-
         std::cout << "\n";
     }
 
-   bool missingNodeModules = false;
+    std::vector<FixAction> availableFixes = FixEngine::resolveFixes(project);
 
-for (const auto& issue :
-     project.issues) {
-
-    if (issue.message ==
-        "node_modules not found") {
-
-        missingNodeModules = true;
-        break;
+    if (availableFixes.empty()) {
+        std::cout << "[INFO] No automated fixes available for detected issues.\n\n";
+        return 0;
     }
-}
 
-if (missingNodeModules &&
-    project.packageManager == "npm") {
+    std::cout << "Available Fixes:\n";
+    for (size_t i = 0; i < availableFixes.size(); ++i) {
+        const auto& fix = availableFixes[i];
+        std::cout << "  [" << (i + 1) << "] " << fix.title << "\n";
+        std::cout << "      " << fix.description << "\n";
+        std::cout << "      Command: " << fix.command << "\n\n";
+    }
 
-    FixAction action;
-
-    action.title =
-        "Install Node.js dependencies";
-
-    action.description =
-        "Install dependencies declared in package.json.";
-
-    action.command =
-        "npm install";
-
-    std::cout
-        << "Fix available:\n";
-
-    std::cout
-        << "  [1] "
-        << action.title
-        << "\n";
-
-    std::cout
-        << "      "
-        << action.description
-        << "\n";
-
-    std::cout
-        << "      Command: "
-        << action.command
-        << "\n\n";
-
-    std::cout
-        << "Run this fix now? [y/N]: ";
-
+    std::cout << "Run fix [1] now? [y/N]: ";
     char answer;
     std::cin >> answer;
 
-    if (answer == 'y' ||
-        answer == 'Y') {
+    if (answer == 'y' || answer == 'Y') {
+        const FixAction& selectedFix = availableFixes[0];
+        std::cout << "\nExecuting: " << selectedFix.command << "...\n\n";
 
-        std::cout
-            << "\nRunning: "
-            << action.command
-            << "\n\n";
+        ProcessResult result;
+        bool status = FixEngine::executeFix(selectedFix, project.path, result);
 
-        const int result =
-            std::system(
-                action.command.c_str()
-            );
-
-        if (result == 0) {
-
-            std::cout
-                << "\n[OK] "
-                << action.title
-                << " completed successfully.\n";
-
-        } else {
-
-            std::cout
-                << "\n[ERROR] "
-                << action.title
-                << " failed.\n";
-
-            return 1;
+        if (!result.stdOut.empty()) {
+            std::cout << result.stdOut << "\n";
         }
 
+        if (status) {
+            std::cout << "[OK] Command executed successfully. Verifying...\n";
+            ProjectInfo recheckedProject = detectProject();
+
+            if (FixEngine::verifyFix(selectedFix, recheckedProject)) {
+                std::cout << "[OK] Fix verified: Issue successfully resolved.\n\n";
+            } else {
+                std::cout << "[WARNING] Command succeeded, but verification failed.\n\n";
+            }
+        } else {
+            std::cout << "[ERROR] Fix failed with exit code " << result.exitCode << "\n";
+            if (!result.stdErr.empty()) {
+                std::cout << "Error Output:\n" << result.stdErr << "\n";
+            }
+            return 1;
+        }
     } else {
-
-        std::cout
-            << "\n[INFO] No changes made.\n";
+        std::cout << "\n[INFO] No changes made.\n\n";
     }
-}
-
-    if (!project.gitRepository) {
-
-        std::cout
-            << "\nGit:\n";
-
-        std::cout
-            << "  [INFO] Git repository not detected.\n";
-
-        std::cout
-            << "  Suggestion: git init\n";
-
-        std::cout
-            << "  Forge will not initialize Git automatically.\n";
-    }
-
-    std::cout << "\n";
 
     return 0;
 }
 
-}
+} // namespace forge

@@ -6,7 +6,6 @@
 namespace forge {
 
 struct DependencyInfo {
-
     std::string name;
     std::string version;
     bool development = false;
@@ -14,11 +13,9 @@ struct DependencyInfo {
     bool warning = false;
     std::string warningMessage;
     std::string status;
-
 };
 
 struct ScriptInfo {
-
     std::string name;
     std::string command;
 };
@@ -34,15 +31,23 @@ struct ProjectIssue {
     std::string message;
     std::string suggestion;
 };
-struct FixAction {
 
+enum class RiskLevel {
+    Safe,
+    Moderate,
+    High,
+    Destructive
+};
+
+struct FixAction {
+    std::string id;
     std::string title;
     std::string description;
     std::string command;
+    RiskLevel risk = RiskLevel::Safe;
 };
 
 struct ProjectInfo {
-
     std::string name;
     std::string path;
     std::string type;
@@ -68,4 +73,4 @@ struct ProjectInfo {
     bool gitRepository = false;
 };
 
-}
+} // namespace forge
