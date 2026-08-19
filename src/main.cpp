@@ -5,7 +5,9 @@
 #include "forge/commands/check.hpp"
 #include "forge/commands/project.hpp"
 #include "forge/commands/fix.hpp"
+#include "forge/commands/build.hpp"
 #include <string>
+#include <vector>
 #include <iostream>
 
 void printHelp() {
@@ -21,14 +23,16 @@ void printHelp() {
         << "  doctor     Check development environment\n"
         << "  version    Show Forge version\n"
         << "  config     Manage Forge configuration\n"
+        << "  env        Show development environment\n"
+        << "  check      Check if development environment is ready\n"
+        << "  project    Detect the current project\n"
+        << "  fix        Run automated repair actions\n"
+        << "  build      Build current project\n"
         << "  help       Show this help message\n\n"
 
         << "Global Options:\n"
         << "  -h, --help       Show help message\n"
-        << "  --version        Show Forge version\n"
-        << "  env        Show development environment\n"
-        << "  check      Check if development environment is ready\n"
-        <<"  project    Detect the current project\n";
+        << "  --version        Show Forge version\n";
 }
 
 void printDoctorHelp() {
@@ -42,6 +46,22 @@ void printDoctorHelp() {
 
         << "Description:\n"
         << "  Check the development environment and installed tools.\n\n"
+
+        << "Options:\n"
+        << "  -h, --help       Show this help message\n";
+}
+
+void printBuildHelp() {
+
+    std::cout
+        << "\n"
+        << "Forge Build\n\n"
+
+        << "Usage:\n"
+        << "  forge build [extra args]\n\n"
+
+        << "Description:\n"
+        << "  Automatically build C++ (CMake) or Node.js projects.\n\n"
 
         << "Options:\n"
         << "  -h, --help       Show this help message\n";
@@ -158,20 +178,50 @@ int main(int argc, char* argv[]) {
     }
     
     if (command == "env") {
-    return forge::runEnv();
+        return forge::runEnv();
     }
     
     if (command == "check") {
-    return forge::runCheck();
+        return forge::runCheck();
     }
 
     if (command == "project") {
-    return forge::runProject();
-     }
+        return forge::runProject();
+    }
 
     if (command == "fix") {
-    return forge::runFix();
-}
+        return forge::runFix();
+    }
+
+    /*
+     * Build command
+     */
+
+    if (command == "build") {
+
+        if (argc >= 3) {
+
+            const std::string option = argv[2];
+
+            if (
+                option == "--help" ||
+                option == "-h"
+            ) {
+
+                printBuildHelp();
+                return 0;
+            }
+        }
+
+        std::vector<std::string> extraArgs;
+
+        for (int i = 2; i < argc; ++i) {
+            extraArgs.push_back(argv[i]);
+        }
+
+        return forge::runBuild(extraArgs);
+    }
+
     /*
      * Unknown command
      */
