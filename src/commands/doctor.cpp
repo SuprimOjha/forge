@@ -22,14 +22,21 @@ int runDoctor() {
     std::cout << "Forge Doctor\n";
     std::cout << "────────────────────────────\n\n";
 
+    /*
+     * Development Tools & C++ Compilers
+     */
+
     std::vector<ToolInfo> tools = {
         detectTool("Git", "git"),
         detectTool("CMake", "cmake"),
+        detectTool("GCC (g++)", "g++"),
+        detectTool("Clang (clang++)", "clang++"),
+        detectTool("MSVC (cl)", "cl"),
         detectTool("Python", "python"),
         detectTool("Node.js", "node")
     };
 
-    std::cout << "Development Tools\n\n";
+    std::cout << "Development Tools & Compilers\n\n";
 
     int installedCount = 0;
     int workingCount = 0;
@@ -111,4 +118,4 @@ int runDoctor() {
     return 1;
 }
 
-}
+} // namespace forge
