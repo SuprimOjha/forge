@@ -6,6 +6,7 @@
 #include "forge/commands/project.hpp"
 #include "forge/commands/plugin.hpp"
 #include "forge/commands/fix.hpp"
+#include "forge/commands/bench.hpp"
 #include "forge/commands/build.hpp"
 #include "forge/commands/audit.hpp"
 #include "forge/commands/init.hpp"
@@ -193,6 +194,9 @@ int main(int argc, char* argv[]) {
 }
     if (command == "audit") {
     return forge::runAudit(argc, argv);
+}
+    if (command == "bench") {
+    return forge::runBench(argc, argv);
 }
 
    if (command == "plugin") {
