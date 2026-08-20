@@ -4,10 +4,32 @@
 #include <iostream>
 #include <string>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 namespace forge {
 
-void printConfigHelp() {
+namespace {
 
+void enableConsoleEncoding() {
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut != INVALID_HANDLE_VALUE) {
+        DWORD dwMode = 0;
+        if (GetConsoleMode(hOut, &dwMode)) {
+            dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            SetConsoleMode(hOut, dwMode);
+        }
+    }
+#endif
+}
+
+} // anonymous namespace
+
+void printConfigHelp() {
     std::cout
         << "\n"
         << "Forge Config\n\n"
@@ -31,13 +53,11 @@ void printConfigHelp() {
         << "  -h, --help              Show this help message\n";
 }
 
-
 bool setConfigValue(
     Config& config,
     const std::string& key,
     const std::string& value
 ) {
-
     if (key == "editor") {
         config.editor = value;
         return true;
@@ -51,13 +71,11 @@ bool setConfigValue(
     return false;
 }
 
-
 bool getConfigValue(
     const Config& config,
     const std::string& key,
     std::string& value
 ) {
-
     if (key == "editor") {
         value = config.editor;
         return true;
@@ -71,12 +89,10 @@ bool getConfigValue(
     return false;
 }
 
-
 bool unsetConfigValue(
     Config& config,
     const std::string& key
 ) {
-
     if (key == "editor") {
         config.editor.clear();
         return true;
@@ -90,13 +106,12 @@ bool unsetConfigValue(
     return false;
 }
 
-
 int runConfig(int argc, char* argv[]) {
+    enableConsoleEncoding();
 
     /*
      * forge config
      */
-
     if (argc < 3) {
         printConfigHelp();
         return 0;
@@ -104,33 +119,24 @@ int runConfig(int argc, char* argv[]) {
 
     const std::string command = argv[2];
 
-
     /*
      * Help
      */
-
-    if (
-        command == "--help" ||
-        command == "-h"
-    ) {
-
+    if (command == "--help" || command == "-h") {
         printConfigHelp();
         return 0;
     }
 
-
     /*
      * Show
      */
-
     if (command == "show") {
-
         const Config config = loadConfig();
 
         std::cout
             << "\n"
             << "Forge Configuration\n"
-            << "────────────────────────────\n\n"
+            << "--------------------------------------------\n\n"
 
             << "Config path:\n"
             << "  " << getConfigPath() << "\n\n"
@@ -154,13 +160,10 @@ int runConfig(int argc, char* argv[]) {
         return 0;
     }
 
-
     /*
      * Path
      */
-
     if (command == "path") {
-
         std::cout
             << getConfigPath()
             << "\n";
@@ -168,31 +171,23 @@ int runConfig(int argc, char* argv[]) {
         return 0;
     }
 
-
     /*
      * Get
      */
-
     if (command == "get") {
-
         if (argc < 4) {
-
             std::cerr
                 << "forge config get: missing key\n\n";
 
             printConfigHelp();
-
             return 1;
         }
 
         const std::string key = argv[3];
-
         const Config config = loadConfig();
-
         std::string value;
 
         if (!getConfigValue(config, key, value)) {
-
             std::cerr
                 << "forge config get: unknown key '"
                 << key
@@ -214,15 +209,11 @@ int runConfig(int argc, char* argv[]) {
         return 0;
     }
 
-
     /*
      * Set
      */
-
     if (command == "set") {
-
         if (argc < 5) {
-
             std::cerr
                 << "forge config set: missing key or value\n\n"
 
@@ -235,15 +226,9 @@ int runConfig(int argc, char* argv[]) {
         const std::string key = argv[3];
 
         /*
-         * Combine all remaining arguments.
-         *
-         * This allows:
-         *
-         * forge config set editor Visual Studio Code
+         * Combine all remaining arguments into value string
          */
-
         std::string value = argv[4];
-
         for (int i = 5; i < argc; ++i) {
             value += " ";
             value += argv[i];
@@ -252,7 +237,6 @@ int runConfig(int argc, char* argv[]) {
         Config config = loadConfig();
 
         if (!setConfigValue(config, key, value)) {
-
             std::cerr
                 << "forge config set: unknown key '"
                 << key
@@ -266,7 +250,6 @@ int runConfig(int argc, char* argv[]) {
         }
 
         if (!saveConfig(config)) {
-
             std::cerr
                 << "forge config: failed to save configuration\n";
 
@@ -274,7 +257,7 @@ int runConfig(int argc, char* argv[]) {
         }
 
         std::cout
-            << "✓ Set "
+            << "[+] Set "
             << key
             << " = "
             << value
@@ -283,15 +266,11 @@ int runConfig(int argc, char* argv[]) {
         return 0;
     }
 
-
     /*
      * Unset
      */
-
     if (command == "unset") {
-
         if (argc < 4) {
-
             std::cerr
                 << "forge config unset: missing key\n\n"
 
@@ -302,11 +281,9 @@ int runConfig(int argc, char* argv[]) {
         }
 
         const std::string key = argv[3];
-
         Config config = loadConfig();
 
         if (!unsetConfigValue(config, key)) {
-
             std::cerr
                 << "forge config unset: unknown key '"
                 << key
@@ -320,7 +297,6 @@ int runConfig(int argc, char* argv[]) {
         }
 
         if (!saveConfig(config)) {
-
             std::cerr
                 << "forge config: failed to save configuration\n";
 
@@ -328,20 +304,17 @@ int runConfig(int argc, char* argv[]) {
         }
 
         std::cout
-            << "✓ Unset "
+            << "[+] Unset "
             << key
             << "\n";
 
         return 0;
     }
 
-
     /*
      * Reset
      */
-
     if (command == "reset") {
-
         Config config;
 
         config.version = 1;
@@ -349,7 +322,6 @@ int runConfig(int argc, char* argv[]) {
         config.shell.clear();
 
         if (!saveConfig(config)) {
-
             std::cerr
                 << "forge config: failed to reset configuration\n";
 
@@ -357,16 +329,14 @@ int runConfig(int argc, char* argv[]) {
         }
 
         std::cout
-            << "✓ Configuration reset\n";
+            << "[+] Configuration reset\n";
 
         return 0;
     }
 
-
     /*
      * Unknown command
      */
-
     std::cerr
         << "forge config: unknown command '"
         << command
@@ -377,4 +347,4 @@ int runConfig(int argc, char* argv[]) {
     return 1;
 }
 
-}
+} // namespace forge
