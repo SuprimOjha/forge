@@ -10,6 +10,7 @@
 #include "forge/commands/audit.hpp"
 #include "forge/commands/init.hpp"
 #include "forge/commands/clean.hpp"
+#include "forge/commands/archive.hpp"
 #include "forge/commands/status.hpp"
 #include <string>
 #include <vector>
@@ -200,6 +201,9 @@ int main(int argc, char* argv[]) {
 if (command == "clean") {
     std::vector<std::string> extraArgs(argv + 2, argv + argc);
     return forge::runClean(extraArgs);
+}
+   if (command == "archive") {
+    return forge::runArchive(argc, argv);
 }
     
     if (command == "env") {
