@@ -31,7 +31,7 @@ void enableConsoleEncoding() {
 }
 
 bool createCppProject(const std::string& projName) {
-    std::cout << "  [*] Creating C++ (CMake) workspace for '" << projName << "'...\n";
+    std::cout << "  [*] Generating C++ (CMake) workspace structure for '" << projName << "'...\n";
 
     fs::create_directories("src");
     fs::create_directories("include/" + projName);
@@ -64,7 +64,7 @@ bool createCppProject(const std::string& projName) {
 }
 
 bool createNodeProject(const std::string& projName) {
-    std::cout << "  [*] Creating Node.js workspace for '" << projName << "'...\n";
+    std::cout << "  [*] Generating Node.js workspace structure for '" << projName << "'...\n";
 
     fs::create_directories("src");
 
@@ -99,18 +99,8 @@ bool createNodeProject(const std::string& projName) {
 int runInit(const std::vector<std::string>& args) {
     enableConsoleEncoding();
 
-    std::cout << "\nForge Init Engine\n";
+    std::cout << "\nForge Interactive Setup Wizard\n";
     std::cout << "--------------------------------------------\n\n";
-
-    std::string currentDirName = fs::current_path().filename().string();
-    std::string projectType = "cpp";
-
-    for (size_t i = 0; i < args.size(); ++i) {
-        if ((args[i] == "--type" || args[i] == "-t") && i + 1 < args.size()) {
-            projectType = args[i + 1];
-            std::transform(projectType.begin(), projectType.end(), projectType.begin(), ::tolower);
-        }
-    }
 
     if (fs::exists("CMakeLists.txt") || fs::exists("package.json")) {
         std::cout << "  [ERROR] A project manifest already exists in this directory.\n";
@@ -118,24 +108,53 @@ int runInit(const std::vector<std::string>& args) {
         return 1;
     }
 
+    std::string currentDirName = fs::current_path().filename().string();
+    std::string projectType = "";
+
+    // Parse flags if provided
+    for (size_t i = 0; i < args.size(); ++i) {
+        if ((args[i] == "--type" || args[i] == "-t") && i + 1 < args.size()) {
+            projectType = args[i + 1];
+        }
+    }
+
+    // Interactive fallback prompt if no --type flag passed
+    if (projectType.empty()) {
+        std::cout << "  Select project template:\n";
+        std::cout << "    [1] C++ (CMake)\n";
+        std::cout << "    [2] Node.js (JavaScript)\n\n";
+        std::cout << "  Choice [1-2, default: 1]: ";
+
+        std::string choice;
+        std::getline(std::cin, choice);
+
+        if (choice == "2" || choice == "node" || choice == "js") {
+            projectType = "node";
+        } else {
+            projectType = "cpp";
+        }
+        std::cout << "\n";
+    }
+
+    std::transform(projectType.begin(), projectType.end(), projectType.begin(), ::tolower);
+
     bool success = false;
     if (projectType == "cpp" || projectType == "cmake" || projectType == "c++") {
         success = createCppProject(currentDirName);
     } else if (projectType == "node" || projectType == "js" || projectType == "ts") {
         success = createNodeProject(currentDirName);
     } else {
-        std::cout << "  [ERROR] Unsupported template type: " << projectType << "\n";
-        std::cout << "  Supported types: 'cpp', 'node'\n\n";
+        std::cout << "  [ERROR] Unsupported template type: " << projectType << "\n\n";
         return 1;
     }
 
     if (success) {
-        std::cout << "\n  [OK] Workspace initialized successfully.\n";
-        std::cout << "  Run 'forge check' or 'forge build' to inspect your project.\n\n";
+        std::cout << "\n  [OK] Project '" << currentDirName << "' initialized successfully.\n";
+        std::cout << "  Run 'forge check' or 'forge build' to begin.\n\n";
         return 0;
     }
 
-    std::cout << "  [ERROR] Failed to write initial project files.\n\n";
+    std::cout << "  [ERROR] Failed to write project template files.\n\n";
     return 1;
 }
 

@@ -27,6 +27,7 @@ add_executable(forge
     src/core/fix_engine.cpp
     src/commands/build.cpp  
     src/core/project_detector.cpp
+    src/commands/init.cpp
 )
 
 target_include_directories(forge

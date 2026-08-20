@@ -7,4 +7,4 @@ namespace forge {
 
 int runInit(const std::vector<std::string>& args = {});
 
-}
+} // namespace forge
