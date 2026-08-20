@@ -7,6 +7,7 @@
 #include "forge/commands/plugin.hpp"
 #include "forge/commands/fix.hpp"
 #include "forge/commands/build.hpp"
+#include "forge/commands/audit.hpp"
 #include "forge/commands/init.hpp"
 #include "forge/commands/clean.hpp"
 #include "forge/commands/status.hpp"
@@ -189,7 +190,9 @@ int main(int argc, char* argv[]) {
     std::vector<std::string> extraArgs(argv + 2, argv + argc);
     return forge::runStatus(extraArgs);
 }
-    
+    if (command == "audit") {
+    return forge::runAudit(argc, argv);
+}
 
    if (command == "plugin") {
     return forge::runPlugin(argc, argv);
