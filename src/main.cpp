@@ -7,6 +7,7 @@
 #include "forge/commands/fix.hpp"
 #include "forge/commands/build.hpp"
 #include "forge/commands/init.hpp"
+#include "forge/commands/clean.hpp"
 #include "forge/commands/status.hpp"
 #include <string>
 #include <vector>
@@ -186,6 +187,13 @@ int main(int argc, char* argv[]) {
     if (command == "status") {
     std::vector<std::string> extraArgs(argv + 2, argv + argc);
     return forge::runStatus(extraArgs);
+}
+
+    #include "forge/commands/clean.hpp"
+
+if (command == "clean") {
+    std::vector<std::string> extraArgs(argv + 2, argv + argc);
+    return forge::runClean(extraArgs);
 }
     
     if (command == "env") {

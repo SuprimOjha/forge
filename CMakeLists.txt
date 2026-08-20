@@ -25,6 +25,7 @@ add_executable(forge
     src/commands/fix.cpp
     src/commands/status.cpp
     src/core/process_runner.cpp
+    src/commands/clean.cpp
     src/core/fix_engine.cpp
     src/commands/build.cpp  
     src/core/project_detector.cpp
