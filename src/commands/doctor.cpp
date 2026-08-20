@@ -104,13 +104,6 @@ int runDoctor() {
         << tools.size()
         << " tools ready\n\n";
 
-    /*
-     * Exit code:
-     *
-     * 0 = all tools ready
-     * 1 = one or more tools are missing/broken
-     */
-
     if (workingCount == static_cast<int>(tools.size())) {
         return 0;
     }
@@ -118,4 +111,4 @@ int runDoctor() {
     return 1;
 }
 
-} // namespace forge
+} 
