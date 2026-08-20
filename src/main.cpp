@@ -7,6 +7,7 @@
 #include "forge/commands/plugin.hpp"
 #include "forge/commands/fix.hpp"
 #include "forge/commands/bench.hpp"
+#include "forge/commands/release.hpp"
 #include "forge/commands/build.hpp"
 #include "forge/commands/audit.hpp"
 #include "forge/commands/init.hpp"
@@ -217,6 +218,9 @@ if (command == "clean") {
     if (command == "check") {
         return forge::runCheck();
     }
+    if (command == "release") {
+    return forge::runRelease(argc, argv);
+}
 
     if (command == "project") {
         return forge::runProject();
