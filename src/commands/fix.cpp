@@ -49,7 +49,7 @@ int runFix() {
     }
 
     std::cout << "Run fix [1] now? [y/N]: ";
-    char answer;
+    char answer = 'n';
     std::cin >> answer;
 
     if (answer == 'y' || answer == 'Y') {
