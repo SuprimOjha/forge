@@ -18,15 +18,13 @@ int runDoctor() {
     SetConsoleCP(CP_UTF8);
 #endif
 
-    std::cout << "\n";
-    std::cout << "Forge Doctor\n";
+    std::cout << "\nForge Doctor\n";
     std::cout << "────────────────────────────\n\n";
 
     /*
      * Development Tools & C++ Compilers
      */
-
-    std::vector<ToolInfo> tools = {
+    const std::vector<ToolInfo> tools = {
         detectTool("Git", "git"),
         detectTool("CMake", "cmake"),
         detectTool("GCC (g++)", "g++"),
@@ -42,67 +40,39 @@ int runDoctor() {
     int workingCount = 0;
 
     for (const auto& tool : tools) {
-
         if (tool.installed) {
-
             ++installedCount;
 
             if (tool.working) {
                 ++workingCount;
             }
 
-            std::cout
-                << "✓ "
-                << tool.name
-                << "\n";
+            std::cout << "✓ " << tool.name << "\n";
 
             if (!tool.version.empty()) {
-                std::cout
-                    << "  Version: "
-                    << tool.version
-                    << "\n";
+                std::cout << "  Version: " << tool.version << "\n";
             }
 
             if (!tool.path.empty()) {
-                std::cout
-                    << "  Path: "
-                    << tool.path
-                    << "\n";
+                std::cout << "  Path: " << tool.path << "\n";
             }
 
             if (tool.working) {
-                std::cout
-                    << "  Status: Ready\n";
+                std::cout << "  Status: Ready\n";
             } else {
-                std::cout
-                    << "  Status: Installed but not responding\n";
+                std::cout << "  Status: Installed but not responding\n";
             }
-
         } else {
-
-            std::cout
-                << "✗ "
-                << tool.name
-                << "\n"
-                << "  Status: Not installed\n";
+            std::cout << "✗ " << tool.name << "\n";
+            std::cout << "  Status: Not installed\n";
         }
 
         std::cout << "\n";
     }
 
     std::cout << "Summary\n";
-
-    std::cout
-        << installedCount
-        << "/"
-        << tools.size()
-        << " tools installed\n";
-
-    std::cout
-        << workingCount
-        << "/"
-        << tools.size()
-        << " tools ready\n\n";
+    std::cout << installedCount << "/" << tools.size() << " tools installed\n";
+    std::cout << workingCount << "/" << tools.size() << " tools ready\n\n";
 
     if (workingCount == static_cast<int>(tools.size())) {
         return 0;
@@ -111,4 +81,4 @@ int runDoctor() {
     return 1;
 }
 
-} 
+} // namespace forge
