@@ -7,6 +7,7 @@
 #include "forge/commands/fix.hpp"
 #include "forge/commands/build.hpp"
 #include "forge/commands/init.hpp"
+#include "forge/commands/status.hpp"
 #include <string>
 #include <vector>
 #include <iostream>
@@ -181,6 +182,10 @@ int main(int argc, char* argv[]) {
     if (command == "init") {
     std::vector<std::string> extraArgs(argv + 2, argv + argc);
     return forge::runInit(extraArgs);
+} 
+    if (command == "status") {
+    std::vector<std::string> extraArgs(argv + 2, argv + argc);
+    return forge::runStatus(extraArgs);
 }
     
     if (command == "env") {
