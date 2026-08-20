@@ -4,6 +4,7 @@
 #include "forge/commands/env.hpp"
 #include "forge/commands/check.hpp"
 #include "forge/commands/project.hpp"
+#include "forge/commands/plugin.hpp"
 #include "forge/commands/fix.hpp"
 #include "forge/commands/build.hpp"
 #include "forge/commands/init.hpp"
@@ -188,9 +189,11 @@ int main(int argc, char* argv[]) {
     std::vector<std::string> extraArgs(argv + 2, argv + argc);
     return forge::runStatus(extraArgs);
 }
+    
 
-    #include "forge/commands/clean.hpp"
-
+   if (command == "plugin") {
+    return forge::runPlugin(argc, argv);
+}
 if (command == "clean") {
     std::vector<std::string> extraArgs(argv + 2, argv + argc);
     return forge::runClean(extraArgs);
