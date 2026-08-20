@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
      */
 
     if (command == "config") {
-        return forge::runConfig(argc, argv);
+      return forge::runConfig(argc, argv);    
     }
 
     if (command == "init") {
