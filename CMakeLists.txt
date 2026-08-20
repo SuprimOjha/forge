@@ -27,8 +27,10 @@ add_executable(forge
     src/core/process_runner.cpp
     src/commands/plugin.cpp
     src/commands/audit.cpp
+    src/commands/release.cpp
     src/commands/clean.cpp
     src/commands/archive.cpp
+    src/commands/bench.cpp
     src/core/fix_engine.cpp
     src/commands/build.cpp  
     src/core/project_detector.cpp
