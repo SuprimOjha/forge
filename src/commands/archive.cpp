@@ -34,6 +34,19 @@ void enableConsoleEncoding() {
 #endif
 }
 
+void printArchiveHelp() {
+    std::cout
+        << "\n"
+        << "Forge Clean Workspace Archiver\n\n"
+
+        << "Usage:\n"
+        << "  forge archive [options]\n\n"
+
+        << "Options:\n"
+        << "  -o, --output <filename>  Specify output archive path/filename\n"
+        << "  -h, --help               Show this help message\n\n";
+}
+
 std::string getTimestamp() {
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t(now);
@@ -45,9 +58,19 @@ std::string getTimestamp() {
 } // anonymous namespace
 
 int runArchive(int argc, char* argv[]) {
-    (void)argc;
-    (void)argv;
     enableConsoleEncoding();
+
+    std::string customOutput;
+
+    for (int i = 2; i < argc; ++i) {
+        std::string arg = argv[i];
+        if ((arg == "-o" || arg == "--output") && i + 1 < argc) {
+            customOutput = argv[++i];
+        } else if (arg == "-h" || arg == "--help") {
+            printArchiveHelp();
+            return 0;
+        }
+    }
 
     std::cout << "\nForge Project Archiver\n";
     std::cout << "--------------------------------------------\n\n";
@@ -55,7 +78,7 @@ int runArchive(int argc, char* argv[]) {
     std::string projName = fs::current_path().filename().string();
     fs::create_directories("dist");
 
-    std::string archiveName = "dist/" + projName + "_" + getTimestamp() + ".zip";
+    std::string archiveName = customOutput.empty() ? ("dist/" + projName + "_" + getTimestamp() + ".zip") : customOutput;
 
     // Detect paths that actually exist to prevent Compress-Archive errors
     std::vector<std::string> candidateTargets = {"src", "include", "CMakeLists.txt", "package.json", "README.md", "LICENSE"};
@@ -83,10 +106,10 @@ int runArchive(int argc, char* argv[]) {
 #ifdef _WIN32
     std::string cmd = "powershell -Command \"Compress-Archive -Path " + pathList + " -DestinationPath '" + archiveName + "' -Force\"";
 #else
-    std::string cmd = "zip -r " + archiveName + " src include CMakeLists.txt package.json -x 'build/*' '.git/*'";
+    std::string cmd = "zip -r " + archiveName + " src include CMakeLists.txt package.json README.md LICENSE -x 'build/*' '.git/*'";
 #endif
 
-    ProcessResult res = ProcessRunner::run(cmd);
+    ProcessRunner::run(cmd);
 
     if (fs::exists(archiveName)) {
         std::uintmax_t size = fs::file_size(archiveName);
