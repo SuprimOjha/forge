@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <iomanip>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -35,15 +36,45 @@ void enableConsoleEncoding() {
 void printLicenseHelp() {
     std::cout
         << "\n"
-        << "Forge License & Header Checker\n\n"
+        << "Forge License Compliance & Risk Auditor\n\n"
 
         << "Usage:\n"
         << "  forge license [options]\n\n"
 
         << "Options:\n"
-        << "  --check                 Check source files for missing copyright headers\n"
-        << "  --apply <holder>        Inject standard copyright header with specified holder\n"
         << "  -h, --help              Show this help message\n";
+}
+
+struct LicenseInfo {
+    std::string name;
+    std::string type; // Permissive, Weak Copyleft, Strong Copyleft
+    std::string risk; // LOW, MEDIUM, HIGH
+};
+
+LicenseInfo identifyLicense(const std::string& content) {
+    std::string lowerContent = content;
+    std::transform(lowerContent.begin(), lowerContent.end(), lowerContent.begin(), ::tolower);
+
+    if (lowerContent.find("mit license") != std::string::npos || lowerContent.find("permission is hereby granted, free of charge") != std::string::npos) {
+        return {"MIT License", "Permissive", "LOW"};
+    }
+    if (lowerContent.find("apache license") != std::string::npos || lowerContent.find("http://www.apache.org/licenses/license-2.0") != std::string::npos) {
+        return {"Apache-2.0", "Permissive", "LOW"};
+    }
+    if (lowerContent.find("bsd 3-clause") != std::string::npos || lowerContent.find("redistribution and use in source and binary forms") != std::string::npos) {
+        return {"BSD-3-Clause", "Permissive", "LOW"};
+    }
+    if (lowerContent.find("gnu general public license") != std::string::npos || lowerContent.find("gpl-3.0") != std::string::npos) {
+        return {"GPL-3.0", "Strong Copyleft", "HIGH"};
+    }
+    if (lowerContent.find("gnu lesser general public license") != std::string::npos || lowerContent.find("lgpl") != std::string::npos) {
+        return {"LGPL-3.0", "Weak Copyleft", "MEDIUM"};
+    }
+    if (lowerContent.find("mozilla public license") != std::string::npos || lowerContent.find("mpl-2.0") != std::string::npos) {
+        return {"MPL-2.0", "Weak Copyleft", "MEDIUM"};
+    }
+
+    return {"Unknown / Custom", "Uncategorized", "UNKNOWN"};
 }
 
 } // anonymous namespace
@@ -51,92 +82,51 @@ void printLicenseHelp() {
 int runLicense(int argc, char* argv[]) {
     enableConsoleEncoding();
 
-    bool checkHeaders = false;
-    bool applyHeaders = false;
-    std::string holderName = "";
-
     for (int i = 2; i < argc; ++i) {
         std::string arg = argv[i];
-        if (arg == "--check") {
-            checkHeaders = true;
-        } else if (arg == "--apply" && i + 1 < argc) {
-            applyHeaders = true;
-            holderName = argv[++i];
-        } else if (arg == "-h" || arg == "--help") {
+        if (arg == "-h" || arg == "--help") {
             printLicenseHelp();
             return 0;
         }
     }
 
-    std::cout << "\nForge License & Header Compliance Engine\n";
+    std::cout << "\nForge License Compliance & Risk Auditor\n";
     std::cout << "--------------------------------------------\n\n";
 
-    // 1. Detect Root LICENSE file
-    if (fs::exists("LICENSE") || fs::exists("LICENSE.md") || fs::exists("LICENSE.txt")) {
-        std::cout << "  [OK] Project LICENSE file detected.\n";
-    } else {
-        std::cout << "  [WARN] No root LICENSE file found in workspace.\n";
-    }
-
-    if (!checkHeaders && !applyHeaders) {
-        std::cout << "\n  Use 'forge license --check' to scan source file headers.\n\n";
-        return 0;
-    }
-
-    std::vector<fs::path> missingHeaders;
-    std::vector<std::string> targetExts = {".cpp", ".hpp", ".h", ".c"};
-
-    auto scanAndProcess = [&](const std::string& dir) {
-        if (!fs::exists(dir)) return;
-        for (const auto& entry : fs::recursive_directory_iterator(dir)) {
-            if (entry.is_regular_file()) {
-                std::string ext = entry.path().extension().string();
-                if (std::find(targetExts.begin(), targetExts.end(), ext) != targetExts.end()) {
-                    std::ifstream inFile(entry.path());
-                    std::string firstLine;
-                    std::getline(inFile, firstLine);
-                    inFile.close();
-
-                    if (firstLine.find("Copyright") == std::string::npos && firstLine.find("SPDX") == std::string::npos) {
-                        missingHeaders.push_back(entry.path());
-                    }
-                }
-            }
-        }
-    };
-
-    scanAndProcess("src");
-    scanAndProcess("include");
-
-    if (checkHeaders) {
-        std::cout << "\n  Header Compliance Report:\n";
-        if (missingHeaders.empty()) {
-            std::cout << "    [OK] All source files contain copyright or SPDX headers.\n\n";
-        } else {
-            std::cout << "    [WARN] Found " << missingHeaders.size() << " file(s) missing copyright headers:\n";
-            for (const auto& file : missingHeaders) {
-                std::cout << "      - " << file.string() << "\n";
-            }
-            std::cout << "\n";
+    fs::path licensePath;
+    for (const auto& entry : fs::directory_iterator(fs::current_path())) {
+        std::string filename = entry.path().filename().string();
+        std::string lowerName = filename;
+        std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+        if (lowerName == "license" || lowerName == "license.md" || lowerName == "license.txt" || lowerName == "copying") {
+            licensePath = entry.path();
+            break;
         }
     }
 
-    if (applyHeaders && !holderName.empty()) {
-        std::string headerText = "// Copyright (c) " + holderName + ". All rights reserved.\n";
-        int updated = 0;
+    if (licensePath.empty()) {
+        std::cout << "  [!] Warning: No primary LICENSE file detected in workspace root.\n\n";
+        return 1;
+    }
 
-        for (const auto& filePath : missingHeaders) {
-            std::ifstream inFile(filePath);
-            std::string content((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
-            inFile.close();
+    std::ifstream file(licensePath);
+    if (!file.is_open()) {
+        std::cerr << "  [!] Error opening license file: " << licensePath.string() << "\n\n";
+        return 1;
+    }
 
-            std::ofstream outFile(filePath);
-            outFile << headerText << content;
-            outFile.close();
-            ++updated;
-        }
+    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    LicenseInfo info = identifyLicense(content);
 
-        std::cout << "  [+] Injected copyright headers into " << updated << " file(s).\n\n";
+    std::cout << "  Primary License File : " << licensePath.filename().string() << "\n";
+    std::cout << "  Detected License     : " << info.name << "\n";
+    std::cout << "  Category / Type      : " << info.type << "\n";
+    std::cout << "  Compliance Risk      : [" << info.risk << "]\n\n";
+
+    if (info.risk == "LOW") {
+        std::cout << "  [OK] License is commercially friendly and standard for open source software.\n\n";
+    } else if (info.risk == "HIGH") {
+        std::cout << "  [!] Notice: Copyleft terms apply. Code using this library may need to be open-sourced.\n\n";
     }
 
     return 0;
