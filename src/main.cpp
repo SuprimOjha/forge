@@ -7,6 +7,7 @@
 #include "forge/commands/score.hpp"
 #include "forge/commands/secret.hpp"
 #include "forge/commands/sweep.hpp"
+#include "forge/commands/request.hpp"
 #include "forge/commands/todo.hpp"
 #include "forge/commands/graph.hpp"
 #include "forge/commands/port.hpp"
@@ -216,6 +217,9 @@ int main(int argc, char* argv[]) {
 }
   if (command == "alias") {
     return forge::runAlias(argc, argv);
+}
+   if (command == "request") {
+    return forge::runRequest(argc, argv);
 }
    if (command == "secret") {
     return forge::runSecret(argc, argv);
