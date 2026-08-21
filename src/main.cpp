@@ -9,6 +9,7 @@
 #include "forge/commands/sweep.hpp"
 #include "forge/commands/request.hpp"
 #include "forge/commands/todo.hpp"
+#include "forge/commands/parallel.hpp"
 #include "forge/commands/graph.hpp"
 #include "forge/commands/port.hpp"
 #include "forge/commands/plugin.hpp"
@@ -239,6 +240,9 @@ if (command == "stats") {
 }
     if (command == "graph") {
     return forge::runGraph(argc, argv);
+}
+    if (command == "parallel") {
+    return forge::runParallel(argc, argv);
 }
     if (command == "port") {
     return forge::runPort(argc, argv);
