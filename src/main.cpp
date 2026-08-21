@@ -10,6 +10,7 @@
 #include "forge/commands/template.hpp"
 #include "forge/commands/bench.hpp"
 #include "forge/commands/release.hpp"
+#include "forge/commands/alias.hpp"
 #include "forge/commands/build.hpp"
 #include "forge/commands/audit.hpp"
 #include "forge/commands/init.hpp"
@@ -200,6 +201,9 @@ int main(int argc, char* argv[]) {
 }
     if (command == "bench") {
     return forge::runBench(argc, argv);
+}
+  if (command == "alias") {
+    return forge::runAlias(argc, argv);
 }
 
    if (command == "plugin") {
