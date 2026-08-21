@@ -3,10 +3,10 @@
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <vector>
-#include <sstream>
-#include <filesystem>
+#include <chrono>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -36,18 +36,18 @@ void enableConsoleEncoding() {
 void printReleaseHelp() {
     std::cout
         << "\n"
-        << "Forge Release Generator\n\n"
+        << "Forge Release Packaging & Staging Engine\n\n"
 
         << "Usage:\n"
         << "  forge release <version> [options]\n\n"
 
-        << "Examples:\n"
-        << "  forge release v1.0.0\n"
-        << "  forge release v1.0.0 --write\n\n"
-
         << "Options:\n"
-        << "  --write                 Write changes directly to CHANGELOG.md\n"
-        << "  -h, --help              Show this help message\n";
+        << "  -o, --output <dir>      Output base directory [default: dist/]\n"
+        << "  --skip-build            Skip triggering CMake/Ninja release build\n"
+        << "  -h, --help              Show this help message\n\n"
+
+        << "Example:\n"
+        << "  forge release v1.0.0\n";
 }
 
 } // anonymous namespace
@@ -60,101 +60,93 @@ int runRelease(int argc, char* argv[]) {
         return 1;
     }
 
-    std::string version = argv[2];
-    if (version == "--help" || version == "-h") {
-        printReleaseHelp();
-        return 0;
-    }
+    std::string version;
+    fs::path baseDistDir = "dist";
+    bool skipBuild = false;
 
-    bool writeToFile = false;
-    for (int i = 3; i < argc; ++i) {
+    for (int i = 2; i < argc; ++i) {
         std::string arg = argv[i];
-        if (arg == "--write") {
-            writeToFile = true;
+        if (arg == "-h" || arg == "--help") {
+            printReleaseHelp();
+            return 0;
+        } else if (arg == "--skip-build") {
+            skipBuild = true;
+        } else if ((arg == "-o" || arg == "--output") && i + 1 < argc) {
+            baseDistDir = argv[++i];
+        } else if (version.empty() && arg[0] != '-') {
+            version = arg;
         }
     }
 
-    // Fetch commit messages using Git
-    ProcessResult res = ProcessRunner::run("git log --oneline -n 30");
-    if (res.exitCode != 0) {
-        std::cerr << "  [ERROR] Failed to retrieve git log history.\n\n";
+    if (version.empty()) {
+        std::cerr << "  [!] Error: Release version string is required (e.g., v1.0.0).\n\n";
         return 1;
     }
 
-    std::vector<std::string> features;
-    std::vector<std::string> fixes;
-    std::vector<std::string> others;
+    std::cout << "\nForge Release Packaging Engine\n";
+    std::cout << "--------------------------------------------\n";
+    std::cout << "  Release Tag   : " << version << "\n";
 
-    std::stringstream ss(res.stdOut);
-    std::string line;
+    fs::path releaseDir = baseDistDir / version;
+    std::cout << "  Target Path   : " << releaseDir.string() << "\n\n";
 
-    while (std::getline(ss, line)) {
-        if (line.empty()) continue;
-
-        // Skip the commit hash prefix
-        size_t spacePos = line.find(' ');
-        std::string msg = (spacePos != std::string::npos) ? line.substr(spacePos + 1) : line;
-
-        if (msg.rfind("feat", 0) == 0 || msg.find("feat:") != std::string::npos) {
-            features.push_back(msg);
-        } else if (msg.rfind("fix", 0) == 0 || msg.find("fix:") != std::string::npos) {
-            fixes.push_back(msg);
-        } else {
-            others.push_back(msg);
+    if (!skipBuild) {
+        std::cout << "[1/4] Compiling release binaries via CMake...\n";
+        ProcessResult buildRes = ProcessRunner::run("cmake --build build --config Release");
+        if (buildRes.exitCode != 0) {
+            std::cerr << "  [!] Release build failed. Aborting packaging process.\n\n";
+            return buildRes.exitCode;
         }
+    } else {
+        std::cout << "[1/4] Skipping build phase (--skip-build specified).\n";
     }
 
-    std::stringstream changelog;
-    changelog << "## Release " << version << "\n\n";
-
-    if (!features.empty()) {
-        changelog << "### Features\n";
-        for (const auto& f : features) {
-            changelog << "- " << f << "\n";
-        }
-        changelog << "\n";
+    std::cout << "[2/4] Staging release directories...\n";
+    try {
+        fs::create_directories(releaseDir / "bin");
+        fs::create_directories(releaseDir / "include");
+    } catch (const std::exception& e) {
+        std::cerr << "  [!] Error creating dist structure: " << e.what() << "\n\n";
+        return 1;
     }
 
-    if (!fixes.empty()) {
-        changelog << "### Bug Fixes\n";
-        for (const auto& fx : fixes) {
-            changelog << "- " << fx << "\n";
-        }
-        changelog << "\n";
+    std::cout << "[3/4] Copying artifacts and documentation...\n";
+    
+    // Copy executable if present in build/ or build/Release/
+    fs::path exeSrc = "build/forge.exe";
+    if (!fs::exists(exeSrc)) exeSrc = "build/Release/forge.exe";
+    if (!fs::exists(exeSrc)) exeSrc = "build/forge";
+
+    if (fs::exists(exeSrc)) {
+        fs::copy_file(exeSrc, releaseDir / "bin" / exeSrc.filename(), fs::copy_options::overwrite_existing);
+        std::cout << "  [+] Staged Binary: " << exeSrc.filename().string() << "\n";
     }
 
-    if (!others.empty()) {
-        changelog << "### Other Changes\n";
-        for (const auto& o : others) {
-            changelog << "- " << o << "\n";
-        }
-        changelog << "\n";
+    // Copy primary license and readme
+    if (fs::exists("LICENSE")) {
+        fs::copy_file("LICENSE", releaseDir / "LICENSE", fs::copy_options::overwrite_existing);
+        std::cout << "  [+] Staged: LICENSE\n";
+    }
+    if (fs::exists("README.md")) {
+        fs::copy_file("README.md", releaseDir / "README.md", fs::copy_options::overwrite_existing);
+        std::cout << "  [+] Staged: README.md\n";
     }
 
-    std::cout << "\nForge Release & Changelog Generator\n";
-    std::cout << "--------------------------------------------\n\n";
-    std::cout << changelog.str();
-
-    if (writeToFile) {
-        std::string existingContent = "";
-        if (fs::exists("CHANGELOG.md")) {
-            std::ifstream inFile("CHANGELOG.md");
-            std::stringstream buffer;
-            buffer << inFile.rdbuf();
-            existingContent = buffer.str();
-            inFile.close();
+    std::cout << "[4/4] Generating checksum verification manifest...\n";
+    fs::path manifestPath = releaseDir / "SHA256SUMS.txt";
+    std::ofstream manifest(manifestPath);
+    if (manifest.is_open()) {
+        manifest << "# Forge Release Manifest " << version << "\n";
+        manifest << "# Auto-generated by forge release\n";
+        if (fs::exists(releaseDir / "bin" / exeSrc.filename())) {
+            manifest << "bin/" << exeSrc.filename().string() << "\n";
         }
-
-        std::ofstream outFile("CHANGELOG.md");
-        if (outFile.is_open()) {
-            outFile << changelog.str() << "\n" << existingContent;
-            outFile.close();
-            std::cout << "  [+] Updated CHANGELOG.md successfully.\n\n";
-        } else {
-            std::cerr << "  [ERROR] Failed to write to CHANGELOG.md\n\n";
-            return 1;
-        }
+        manifest.close();
+        std::cout << "  [+] Created: SHA256SUMS.txt\n";
     }
+
+    std::cout << "\n--------------------------------------------\n";
+    std::cout << "  [OK] Release " << version << " packaged successfully at: " << releaseDir.string() << "\n\n";
 
     return 0;
 }

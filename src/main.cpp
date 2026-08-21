@@ -276,7 +276,7 @@ if (command == "stats") {
     if (command == "check") {
         return forge::runCheck();
     }
-    if (command == "release") {
+   if (command == "release") {
     return forge::runRelease(argc, argv);
 }
 
