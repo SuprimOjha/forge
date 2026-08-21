@@ -16,6 +16,7 @@
 #include "forge/commands/license.hpp"
 #include "forge/commands/stats.hpp"
 #include "forge/commands/fix.hpp"
+#include "forge/commands/completion.hpp"
 #include "forge/commands/template.hpp"
 #include "forge/commands/bench.hpp"
 #include "forge/commands/release.hpp"
@@ -231,6 +232,9 @@ int main(int argc, char* argv[]) {
 if (command == "clean") {
     std::vector<std::string> extraArgs(argv + 2, argv + argc);
     return forge::runClean(extraArgs);
+}
+ if (command == "completion") {
+    return forge::runCompletion(argc, argv);
 }
 if (command == "stats") {
     return forge::runStats(argc, argv);

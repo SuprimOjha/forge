@@ -21,6 +21,7 @@ add_executable(forge
     src/commands/env.cpp
     src/commands/check.cpp
     src/core/config.cpp
+    src/commands/completion.cpp
     src/commands/project.cpp
     src/commands/fix.cpp
     src/commands/request.cpp
