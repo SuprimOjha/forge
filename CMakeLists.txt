@@ -24,6 +24,7 @@ add_executable(forge
     src/commands/project.cpp
     src/commands/fix.cpp
     src/commands/request.cpp
+    src/commands/parallel.cpp
     src/commands/status.cpp
     src/commands/diff.cpp
     src/commands/run.cpp
