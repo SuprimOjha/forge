@@ -4,6 +4,7 @@
 #include "forge/commands/env.hpp"
 #include "forge/commands/check.hpp"
 #include "forge/commands/project.hpp"
+#include "forge/commands/score.hpp"
 #include "forge/commands/todo.hpp"
 #include "forge/commands/graph.hpp"
 #include "forge/commands/plugin.hpp"
@@ -233,6 +234,9 @@ if (command == "stats") {
 }
     if (command == "template") {
     return forge::runTemplate(argc, argv);
+}
+    if (command == "score") {
+    return forge::runScore(argc, argv);
 }
     if (command == "env") {
         return forge::runEnv();
