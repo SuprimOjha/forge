@@ -30,6 +30,7 @@ add_executable(forge
     src/commands/release.cpp
     src/commands/clean.cpp
     src/commands/graph.cpp
+    src/commands/template.cpp
     src/commands/archive.cpp
     src/commands/bench.cpp
     src/core/fix_engine.cpp
