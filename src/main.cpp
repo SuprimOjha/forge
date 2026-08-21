@@ -7,6 +7,7 @@
 #include "forge/commands/graph.hpp"
 #include "forge/commands/plugin.hpp"
 #include "forge/commands/fix.hpp"
+#include "forge/commands/template.hpp"
 #include "forge/commands/bench.hpp"
 #include "forge/commands/release.hpp"
 #include "forge/commands/build.hpp"
@@ -213,6 +214,9 @@ if (command == "clean") {
 }
     if (command == "graph") {
     return forge::runGraph(argc, argv);
+}
+    if (command == "template") {
+    return forge::runTemplate(argc, argv);
 }
     if (command == "env") {
         return forge::runEnv();
