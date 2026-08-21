@@ -19,6 +19,7 @@
 #include "forge/commands/release.hpp"
 #include "forge/commands/alias.hpp"
 #include "forge/commands/build.hpp"
+#include "forge/commands/diff.hpp"
 #include "forge/commands/audit.hpp"
 #include "forge/commands/run.hpp"
 #include "forge/commands/init.hpp"
@@ -249,6 +250,9 @@ if (command == "stats") {
 }
     if (command == "template") {
     return forge::runTemplate(argc, argv);
+}
+    if (command == "diff") {
+    return forge::runDiff(argc, argv);
 }
     if (command == "score") {
     return forge::runScore(argc, argv);
