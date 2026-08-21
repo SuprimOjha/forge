@@ -34,6 +34,7 @@ add_executable(forge
     src/commands/license.cpp
     src/commands/stats.cpp
     src/commands/template.cpp
+    src/commands/sweep.cpp
     src/commands/todo.cpp
     src/commands/archive.cpp
     src/commands/score.cpp
