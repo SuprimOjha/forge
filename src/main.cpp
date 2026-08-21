@@ -4,6 +4,7 @@
 #include "forge/commands/env.hpp"
 #include "forge/commands/check.hpp"
 #include "forge/commands/project.hpp"
+#include "forge/commands/todo.hpp"
 #include "forge/commands/graph.hpp"
 #include "forge/commands/plugin.hpp"
 #include "forge/commands/license.hpp"
@@ -223,6 +224,9 @@ if (command == "stats") {
 }
     if (command == "graph") {
     return forge::runGraph(argc, argv);
+}
+    if (command == "todo") {
+    return forge::runTodo(argc, argv);
 }
     if (command == "license") {
     return forge::runLicense(argc, argv);
