@@ -20,6 +20,7 @@
 #include "forge/commands/alias.hpp"
 #include "forge/commands/build.hpp"
 #include "forge/commands/audit.hpp"
+#include "forge/commands/run.hpp"
 #include "forge/commands/init.hpp"
 #include "forge/commands/clean.hpp"
 #include "forge/commands/archive.hpp"
@@ -242,6 +243,9 @@ if (command == "stats") {
 }
     if (command == "license") {
     return forge::runLicense(argc, argv);
+}
+    if (command == "run") {
+    return forge::runRun(argc, argv);
 }
     if (command == "template") {
     return forge::runTemplate(argc, argv);
