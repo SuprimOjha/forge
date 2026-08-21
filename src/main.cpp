@@ -254,7 +254,7 @@ if (command == "stats") {
     if (command == "todo") {
     return forge::runTodo(argc, argv);
 }
-    if (command == "license") {
+ if (command == "license") {
     return forge::runLicense(argc, argv);
 }
     if (command == "run") {
