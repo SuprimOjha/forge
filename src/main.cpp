@@ -4,6 +4,7 @@
 #include "forge/commands/env.hpp"
 #include "forge/commands/check.hpp"
 #include "forge/commands/project.hpp"
+#include "forge/commands/graph.hpp"
 #include "forge/commands/plugin.hpp"
 #include "forge/commands/fix.hpp"
 #include "forge/commands/bench.hpp"
@@ -210,7 +211,9 @@ if (command == "clean") {
    if (command == "archive") {
     return forge::runArchive(argc, argv);
 }
-    
+    if (command == "graph") {
+    return forge::runGraph(argc, argv);
+}
     if (command == "env") {
         return forge::runEnv();
     }
