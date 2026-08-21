@@ -5,6 +5,7 @@
 #include "forge/commands/check.hpp"
 #include "forge/commands/project.hpp"
 #include "forge/commands/score.hpp"
+#include "forge/commands/secret.hpp"
 #include "forge/commands/sweep.hpp"
 #include "forge/commands/todo.hpp"
 #include "forge/commands/graph.hpp"
@@ -213,7 +214,9 @@ int main(int argc, char* argv[]) {
   if (command == "alias") {
     return forge::runAlias(argc, argv);
 }
-
+   if (command == "secret") {
+    return forge::runSecret(argc, argv);
+}
    if (command == "plugin") {
     return forge::runPlugin(argc, argv);
 }
