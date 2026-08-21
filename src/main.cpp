@@ -9,6 +9,7 @@
 #include "forge/commands/sweep.hpp"
 #include "forge/commands/todo.hpp"
 #include "forge/commands/graph.hpp"
+#include "forge/commands/port.hpp"
 #include "forge/commands/plugin.hpp"
 #include "forge/commands/license.hpp"
 #include "forge/commands/stats.hpp"
@@ -232,6 +233,9 @@ if (command == "stats") {
 }
     if (command == "graph") {
     return forge::runGraph(argc, argv);
+}
+    if (command == "port") {
+    return forge::runPort(argc, argv);
 }
     if (command == "todo") {
     return forge::runTodo(argc, argv);

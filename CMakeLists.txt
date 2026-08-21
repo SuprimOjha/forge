@@ -34,6 +34,7 @@ add_executable(forge
     src/commands/license.cpp
     src/commands/secret.cpp
     src/commands/stats.cpp
+    src/commands/port.cpp
     src/commands/template.cpp
     src/commands/sweep.cpp
     src/commands/todo.cpp
@@ -55,4 +56,8 @@ if(MSVC)
     target_compile_options(forge PRIVATE /W4)
 else()
     target_compile_options(forge PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+if (WIN32)
+    target_link_libraries(forge PRIVATE ws2_32)
 endif()
