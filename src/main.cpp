@@ -261,9 +261,9 @@ if (command == "stats") {
     if (command == "score") {
     return forge::runScore(argc, argv);
 }
-    if (command == "env") {
-        return forge::runEnv();
-    }
+   if (command == "env") {
+    return forge::runEnv(argc, argv);
+}
     
     if (command == "check") {
         return forge::runCheck();
