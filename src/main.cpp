@@ -5,6 +5,7 @@
 #include "forge/commands/check.hpp"
 #include "forge/commands/project.hpp"
 #include "forge/commands/score.hpp"
+#include "forge/commands/sweep.hpp"
 #include "forge/commands/todo.hpp"
 #include "forge/commands/graph.hpp"
 #include "forge/commands/plugin.hpp"
@@ -202,6 +203,9 @@ int main(int argc, char* argv[]) {
 }
     if (command == "audit") {
     return forge::runAudit(argc, argv);
+}
+    if (command == "sweep") {
+    return forge::runSweep(argc, argv);
 }
     if (command == "bench") {
     return forge::runBench(argc, argv);
