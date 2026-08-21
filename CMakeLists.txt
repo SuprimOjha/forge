@@ -32,6 +32,7 @@ add_executable(forge
     src/commands/graph.cpp
     src/commands/alias.cpp
     src/commands/license.cpp
+    src/commands/secret.cpp
     src/commands/stats.cpp
     src/commands/template.cpp
     src/commands/sweep.cpp
