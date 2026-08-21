@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <iomanip>
+#include <chrono>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -11,8 +11,10 @@
 #pragma comment(lib, "ws2_32.lib")
 #else
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <netdb.h>
 #endif
 
 namespace forge {
@@ -34,82 +36,58 @@ void enableConsoleEncoding() {
 #endif
 }
 
-struct PortTarget {
-    int port;
-    std::string defaultService;
-};
-
 void printPortHelp() {
     std::cout
         << "\n"
-        << "Forge Network Port & Service Health Analyzer\n\n"
+        << "Forge Port Availability & Socket Diagnostics\n\n"
 
         << "Usage:\n"
-        << "  forge port [options]\n\n"
+        << "  forge port <port|host:port> [options]\n\n"
 
         << "Options:\n"
-        << "  --check <port>          Check connectivity to a specific port\n"
-        << "  -h, --help              Show this help message\n";
+        << "  -h, --host <host>    Target host address [default: 127.0.0.1]\n"
+        << "  --help               Show this help message\n\n"
+
+        << "Examples:\n"
+        << "  forge port 8080\n"
+        << "  forge port 443 -h github.com\n";
 }
 
-bool initSockets() {
+bool checkPort(const std::string& host, int port, double& latencyMs) {
 #ifdef _WIN32
     WSADATA wsaData;
-    return WSAStartup(MAKEWORD(2, 2), &wsaData) == 0;
-#else
-    return true;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        return false;
+    }
 #endif
-}
 
-void cleanupSockets() {
+    struct addrinfo hints{}, *res = nullptr;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+
+    std::string portStr = std::to_string(port);
+    if (getaddrinfo(host.c_str(), portStr.c_str(), &hints, &res) != 0) {
 #ifdef _WIN32
-    WSACleanup();
+        WSACleanup();
 #endif
-}
-
-bool isPortOpen(const std::string& host, int port, int timeoutMs = 200) {
-    SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (sock == INVALID_SOCKET) return false;
-
-    // Non-blocking socket setup
-#ifdef _WIN32
-    u_long mode = 1;
-    ioctlsocket(sock, FIONBIO, &mode);
-#else
-    int flags = fcntl(sock, F_GETFL, 0);
-    fcntl(sock, F_SETFL, flags | O_NONBLOCK);
-#endif
-
-    sockaddr_in serverAddr{};
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(static_cast<u_short>(port));
-    inet_pton(AF_INET, host.c_str(), &serverAddr.sin_addr);
-
-    connect(sock, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr));
-
-    fd_set fdset;
-    FD_ZERO(&fdset);
-    FD_SET(sock, &fdset);
-
-    timeval tv;
-    tv.tv_sec = 0;
-    tv.tv_usec = timeoutMs * 1000;
-
-    bool connected = false;
-    if (select(static_cast<int>(sock + 1), nullptr, &fdset, nullptr, &tv) == 1) {
-        int so_error;
-        socklen_t len = sizeof(so_error);
-        getsockopt(sock, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&so_error), &len);
-        if (so_error == 0) {
-            connected = true;
-        }
+        return false;
     }
 
+    auto start = std::chrono::high_resolution_clock::now();
 #ifdef _WIN32
-    closesocket(sock);
+    SOCKET sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    bool connected = (sock != INVALID_SOCKET && connect(sock, res->ai_addr, (int)res->ai_addrlen) == 0);
+    if (sock != INVALID_SOCKET) closesocket(sock);
+    WSACleanup();
 #else
-    close(sock);
+    int sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    bool connected = (sock >= 0 && connect(sock, res->ai_addr, res->ai_addrlen) == 0);
+    if (sock >= 0) close(sock);
 #endif
+    auto end = std::chrono::high_resolution_clock::now();
+
+    freeaddrinfo(res);
+    latencyMs = std::chrono::duration<double, std::milli>(end - start).count();
 
     return connected;
 }
@@ -119,66 +97,52 @@ bool isPortOpen(const std::string& host, int port, int timeoutMs = 200) {
 int runPort(int argc, char* argv[]) {
     enableConsoleEncoding();
 
-    int specificPort = 0;
-
-    for (int i = 2; i < argc; ++i) {
-        std::string arg = argv[i];
-        if (arg == "--check" && i + 1 < argc) {
-            specificPort = std::stoi(argv[++i]);
-        } else if (arg == "-h" || arg == "--help") {
-            printPortHelp();
-            return 0;
-        }
-    }
-
-    if (!initSockets()) {
-        std::cerr << "  [!] Failed to initialize socket subsystem.\n\n";
+    if (argc < 3) {
+        printPortHelp();
         return 1;
     }
 
-    std::cout << "\nForge Network Port & Service Health\n";
-    std::cout << "--------------------------------------------\n\n";
+    std::string host = "127.0.0.1";
+    int port = 0;
 
-    if (specificPort > 0) {
-        bool open = isPortOpen("127.0.0.1", specificPort);
-        std::cout << "  Port " << specificPort << ": " 
-                  << (open ? "[OCCUPIED / LISTENING]" : "[FREE / AVAILABLE]") << "\n\n";
-        cleanupSockets();
+    for (int i = 2; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--help") {
+            printPortHelp();
+            return 0;
+        } else if ((arg == "-h" || arg == "--host") && i + 1 < argc) {
+            host = argv[++i];
+        } else if (port == 0 && arg[0] != '-') {
+            size_t colon = arg.find(':');
+            if (colon != std::string::npos) {
+                host = arg.substr(0, colon);
+                port = std::stoi(arg.substr(colon + 1));
+            } else {
+                port = std::stoi(arg);
+            }
+        }
+    }
+
+    if (port <= 0 || port > 65535) {
+        std::cerr << "  [!] Error: Invalid port number specified.\n\n";
+        return 1;
+    }
+
+    std::cout << "\nForge Socket Diagnostic\n";
+    std::cout << "--------------------------------------------\n";
+    std::cout << "  Target Host : " << host << "\n";
+    std::cout << "  Target Port : " << port << "\n\n";
+
+    double latency = 0.0;
+    bool isOpen = checkPort(host, port, latency);
+
+    if (isOpen) {
+        std::cout << "  [OPEN] Port " << port << " is actively accepting connections (" << latency << " ms).\n\n";
         return 0;
+    } else {
+        std::cout << "  [CLOSED/AVAILABLE] Port " << port << " is not accepting connections.\n\n";
+        return 1;
     }
-
-    std::vector<PortTarget> commonPorts = {
-        {80, "HTTP Web Server"},
-        {443, "HTTPS Web Server"},
-        {3000, "Node / React / Vue Dev Server"},
-        {5000, "Flask / ASP.NET Dev Server"},
-        {5432, "PostgreSQL Database"},
-        {6379, "Redis Cache Server"},
-        {8000, "Django / FastAPI Dev Server"},
-        {8080, "Spring / Vite / General Web"},
-        {27017, "MongoDB Database"}
-    };
-
-    std::cout << std::left
-              << std::setw(10) << "Port"
-              << std::setw(32) << "Service / Description"
-              << std::setw(20) << "Status"
-              << "\n";
-    std::cout << "--------------------------------------------------------\n";
-
-    for (const auto& pt : commonPorts) {
-        bool active = isPortOpen("127.0.0.1", pt.port);
-        std::cout << std::left
-                  << std::setw(10) << pt.port
-                  << std::setw(32) << pt.defaultService
-                  << std::setw(20) << (active ? "[OCCUPIED]" : "[AVAILABLE]")
-                  << "\n";
-    }
-
-    std::cout << "--------------------------------------------------------\n\n";
-
-    cleanupSockets();
-    return 0;
 }
 
 } // namespace forge

@@ -3,7 +3,7 @@
 namespace forge {
 
 /**
- * @brief Analyzes open ports and tests TCP socket service health.
+ * @brief Checks local or remote TCP port status, availability, and connectivity.
  * @param argc Argument count.
  * @param argv Argument vector.
  * @return Exit status code (0 on success, 1 on failure).
