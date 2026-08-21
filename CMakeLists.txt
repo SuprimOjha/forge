@@ -23,6 +23,7 @@ add_executable(forge
     src/core/config.cpp
     src/commands/project.cpp
     src/commands/fix.cpp
+    src/commands/request.cpp
     src/commands/status.cpp
     src/commands/diff.cpp
     src/commands/run.cpp
