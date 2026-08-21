@@ -6,6 +6,7 @@
 #include "forge/commands/project.hpp"
 #include "forge/commands/graph.hpp"
 #include "forge/commands/plugin.hpp"
+#include "forge/commands/license.hpp"
 #include "forge/commands/fix.hpp"
 #include "forge/commands/template.hpp"
 #include "forge/commands/bench.hpp"
@@ -218,6 +219,9 @@ if (command == "clean") {
 }
     if (command == "graph") {
     return forge::runGraph(argc, argv);
+}
+    if (command == "license") {
+    return forge::runLicense(argc, argv);
 }
     if (command == "template") {
     return forge::runTemplate(argc, argv);
