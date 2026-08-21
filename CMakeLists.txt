@@ -36,6 +36,7 @@ add_executable(forge
     src/commands/template.cpp
     src/commands/todo.cpp
     src/commands/archive.cpp
+    src/commands/score.cpp
     src/commands/bench.cpp
     src/core/fix_engine.cpp
     src/commands/build.cpp  
