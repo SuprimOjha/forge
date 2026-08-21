@@ -5,8 +5,8 @@
 #include <filesystem>
 #include <string>
 #include <vector>
-#include <map>
 #include <algorithm>
+#include <iomanip>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -33,27 +33,34 @@ void enableConsoleEncoding() {
 #endif
 }
 
-struct TodoItem {
-    std::string file;
-    std::size_t lineNum;
-    std::string tag;
-    std::string text;
-};
-
 void printTodoHelp() {
     std::cout
         << "\n"
-        << "Forge Technical Debt & TODO Scanner\n\n"
+        << "Forge Technical Debt & TODO Comment Extractor\n\n"
 
         << "Usage:\n"
         << "  forge todo [options]\n\n"
 
         << "Options:\n"
-        << "  -h, --help              Show this help message\n";
+        << "  -d, --dir <path>    Target directory to scan [default: .]\n"
+        << "  -h, --help          Show this help message\n\n"
+
+        << "Examples:\n"
+        << "  forge todo\n"
+        << "  forge todo -d src/\n";
 }
 
-bool isIgnoredDir(const std::string& dirName) {
-    return (dirName == "build" || dirName == ".git" || dirName == "node_modules" || dirName == "dist" || dirName == ".vs");
+struct TodoItem {
+    std::string file;
+    size_t lineNum;
+    std::string tag;
+    std::string comment;
+};
+
+bool isSourceFile(const fs::path& p) {
+    std::string ext = p.extension().string();
+    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+    return (ext == ".cpp" || ext == ".hpp" || ext == ".h" || ext == ".c" || ext == ".py" || ext == ".js" || ext == ".ts" || ext == ".rs");
 }
 
 } // anonymous namespace
@@ -61,82 +68,72 @@ bool isIgnoredDir(const std::string& dirName) {
 int runTodo(int argc, char* argv[]) {
     enableConsoleEncoding();
 
+    fs::path targetDir = ".";
+
     for (int i = 2; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "-h" || arg == "--help") {
             printTodoHelp();
             return 0;
+        } else if ((arg == "-d" || arg == "--dir") && i + 1 < argc) {
+            targetDir = argv[++i];
         }
     }
 
-    std::vector<std::string> tags = {"TODO", "FIXME", "HACK", "BUG", "OPTIMIZE", "XXX"};
-    std::map<std::string, std::vector<TodoItem>> groupedItems;
-    std::size_t totalCount = 0;
+    std::cout << "\nForge Technical Debt Auditor\n";
+    std::cout << "--------------------------------------------\n";
+    std::cout << "  Workspace Target : " << fs::absolute(targetDir).string() << "\n\n";
 
-    std::vector<std::string> scanDirs = {"src", "include", "lib", "tests"};
+    if (!fs::exists(targetDir)) {
+        std::cerr << "  [!] Directory not found: " << targetDir.string() << "\n\n";
+        return 1;
+    }
 
-    for (const auto& scanDir : scanDirs) {
-        if (!fs::exists(scanDir)) continue;
+    std::vector<TodoItem> items;
+    const std::vector<std::string> tags = {"TODO", "FIXME", "HACK", "XXX", "NOTE"};
 
-        for (const auto& entry : fs::recursive_directory_iterator(scanDir)) {
-            if (entry.is_directory()) {
-                if (isIgnoredDir(entry.path().filename().string())) {
-                    continue;
-                }
-            } else if (entry.is_regular_file()) {
-                std::ifstream file(entry.path());
-                if (!file.is_open()) continue;
+    for (const auto& entry : fs::recursive_directory_iterator(targetDir, fs::directory_options::skip_permission_denied)) {
+        if (entry.is_regular_file() && isSourceFile(entry.path())) {
+            std::ifstream file(entry.path());
+            if (!file.is_open()) continue;
 
-                std::string line;
-                std::size_t currentLine = 0;
+            std::string line;
+            size_t lineNum = 0;
 
-                while (std::getline(file, line)) {
-                    currentLine++;
-
-                    for (const auto& tag : tags) {
-                        size_t pos = line.find(tag);
-                        if (pos != std::string::npos) {
-                            std::string snippet = line.substr(pos);
-                            // Clean up trailing whitespace
-                            snippet.erase(snippet.find_last_not_of(" \t\r\n") + 1);
-
-                            groupedItems[tag].push_back({
-                                entry.path().string(),
-                                currentLine,
-                                tag,
-                                snippet
-                            });
-                            totalCount++;
-                            break;
+            while (std::getline(file, line)) {
+                lineNum++;
+                for (const auto& tag : tags) {
+                    size_t pos = line.find(tag);
+                    if (pos != std::string::npos) {
+                        std::string comment = line.substr(pos + tag.length());
+                        // Trim leading punctuation or spaces
+                        size_t start = comment.find_first_not_of(" :#-");
+                        if (start != std::string::npos) {
+                            comment = comment.substr(start);
                         }
+                        
+                        std::string relPath = fs::relative(entry.path(), targetDir).string();
+                        std::replace(relPath.begin(), relPath.end(), '\\', '/');
+                        items.push_back({relPath, lineNum, tag, comment});
+                        break;
                     }
                 }
             }
         }
     }
 
-    std::cout << "\nForge Technical Debt & TODO Scanner\n";
-    std::cout << "--------------------------------------------\n\n";
-
-    if (totalCount == 0) {
-        std::cout << "  [OK] No TODOs, FIXMEs, or technical debt markers found!\n\n";
+    if (items.empty()) {
+        std::cout << "  [OK] No technical debt annotations (TODO, FIXME, HACK) found!\n\n";
         return 0;
     }
 
-    std::cout << "  Found " << totalCount << " technical debt marker(s):\n\n";
-
-    for (const auto& tag : tags) {
-        if (groupedItems.find(tag) == groupedItems.end()) continue;
-
-        const auto& items = groupedItems[tag];
-        std::cout << "  [" << tag << "] (" << items.size() << ")\n";
-
-        for (const auto& item : items) {
-            std::cout << "    - " << item.file << ":" << item.lineNum << "\n"
-                      << "      " << item.text << "\n";
-        }
-        std::cout << "\n";
+    for (const auto& item : items) {
+        std::cout << "  [" << item.tag << "] " << item.file << ":" << item.lineNum << "\n";
+        std::cout << "      └── " << item.comment << "\n\n";
     }
+
+    std::cout << "--------------------------------------------\n";
+    std::cout << "  Total Technical Debt Items Found: " << items.size() << "\n\n";
 
     return 0;
 }
