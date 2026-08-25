@@ -27,6 +27,7 @@
 #include "forge/commands/tree.hpp"
 #include "forge/commands/alias.hpp"
 #include "forge/commands/build.hpp"
+#include "forge/commands/env_check.hpp"
 #include "forge/commands/diff.hpp"
 #include "forge/commands/audit.hpp"
 #include "forge/commands/run.hpp"
@@ -225,6 +226,9 @@ int main(int argc, char* argv[]) {
 }
    if (command == "health") {
     return forge::runHealth(argc, argv);
+}
+   if (command == "env-check") {
+    return forge::runEnvCheck(argc, argv);
 }
 if (command == "cheat") {
     return forge::runCheat(argc, argv);
