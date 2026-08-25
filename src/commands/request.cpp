@@ -111,7 +111,7 @@ int runRequest(int argc, char* argv[]) {
         return res.exitCode;
     }
 
-    return 0;
+ return 0;
 }
 
 } // namespace forge
