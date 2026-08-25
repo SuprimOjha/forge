@@ -7,6 +7,7 @@
 #include "forge/commands/score.hpp"
 #include "forge/commands/secret.hpp"
 #include "forge/commands/sweep.hpp"
+#include "forge/commands/pack.hpp"
 #include "forge/commands/request.hpp"
 #include "forge/commands/todo.hpp"
 #include "forge/commands/parallel.hpp"
@@ -268,6 +269,10 @@ if (command == "stats") {
 }
     if (command == "score") {
     return forge::runScore(argc, argv);
+}
+   
+if (command == "pack") {
+    return forge::runPack(argc, argv);
 }
    if (command == "env") {
     return forge::runEnv(argc, argv);
