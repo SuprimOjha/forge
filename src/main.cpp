@@ -16,6 +16,7 @@
 #include "forge/commands/port.hpp"
 #include "forge/commands/plugin.hpp"
 #include "forge/commands/license.hpp"
+#include "forge/commands/cheat.hpp"
 #include "forge/commands/stats.hpp"
 #include "forge/commands/fix.hpp"
 #include "forge/commands/completion.hpp"
@@ -223,6 +224,9 @@ int main(int argc, char* argv[]) {
 }
    if (command == "health") {
     return forge::runHealth(argc, argv);
+}
+if (command == "cheat") {
+    return forge::runCheat(argc, argv);
 }
   if (command == "alias") {
     return forge::runAlias(argc, argv);
