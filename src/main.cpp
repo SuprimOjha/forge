@@ -8,6 +8,7 @@
 #include "forge/commands/secret.hpp"
 #include "forge/commands/sweep.hpp"
 #include "forge/commands/pack.hpp"
+#include "forge/commands/profile.hpp"
 #include "forge/commands/request.hpp"
 #include "forge/commands/todo.hpp"
 #include "forge/commands/health.hpp"
@@ -285,6 +286,9 @@ if (command == "stats") {
 }
 if (command == "tree") {
     return forge::runTree(argc, argv);
+}
+if (command == "profile") {
+    return forge::runProfile(argc, argv);
 }
    
 if (command == "pack") {
