@@ -18,6 +18,7 @@
 #include "forge/commands/plugin.hpp"
 #include "forge/commands/license.hpp"
 #include "forge/commands/cheat.hpp"
+#include "forge/commands/deps.hpp"
 #include "forge/commands/stats.hpp"
 #include "forge/commands/fix.hpp"
 #include "forge/commands/completion.hpp"
@@ -254,6 +255,9 @@ if (command == "clean") {
 }
  if (command == "completion") {
     return forge::runCompletion(argc, argv);
+}
+if (command == "deps") {
+    return forge::runDeps(argc, argv);
 }
 if (command == "stats") {
     return forge::runStats(argc, argv);
