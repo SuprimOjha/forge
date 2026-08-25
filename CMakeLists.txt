@@ -29,6 +29,7 @@ add_executable(forge
     src/commands/snapshot.cpp
     src/commands/health.cpp
     src/commands/cheat.cpp
+    src/commands/search.cpp
     src/commands/profile.cpp
     src/commands/project.cpp
     src/commands/fix.cpp
