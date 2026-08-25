@@ -10,6 +10,7 @@
 #include "forge/commands/pack.hpp"
 #include "forge/commands/request.hpp"
 #include "forge/commands/todo.hpp"
+#include "forge/commands/health.hpp"
 #include "forge/commands/parallel.hpp"
 #include "forge/commands/graph.hpp"
 #include "forge/commands/port.hpp"
@@ -219,6 +220,9 @@ int main(int argc, char* argv[]) {
 }
     if (command == "bench") {
     return forge::runBench(argc, argv);
+}
+   if (command == "health") {
+    return forge::runHealth(argc, argv);
 }
   if (command == "alias") {
     return forge::runAlias(argc, argv);

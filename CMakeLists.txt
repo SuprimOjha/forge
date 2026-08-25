@@ -25,6 +25,7 @@ add_executable(forge
     src/commands/pack.cpp
     src/commands/tree.cpp
     src/commands/snapshot.cpp
+    src/commands/health.cpp
     src/commands/project.cpp
     src/commands/fix.cpp
     src/commands/request.cpp
