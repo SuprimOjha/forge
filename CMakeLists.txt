@@ -22,6 +22,7 @@ add_executable(forge
     src/commands/check.cpp
     src/commands/env_check.cpp
     src/core/config.cpp
+    src/commands/deps.cpp
     src/commands/completion.cpp
     src/commands/pack.cpp
     src/commands/tree.cpp
