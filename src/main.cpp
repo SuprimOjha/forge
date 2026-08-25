@@ -28,6 +28,7 @@
 #include "forge/commands/audit.hpp"
 #include "forge/commands/run.hpp"
 #include "forge/commands/init.hpp"
+#include "forge/commands/snapshot.hpp"
 #include "forge/commands/clean.hpp"
 #include "forge/commands/archive.hpp"
 #include "forge/commands/status.hpp"
@@ -224,6 +225,9 @@ int main(int argc, char* argv[]) {
 }
    if (command == "request") {
     return forge::runRequest(argc, argv);
+}
+   if (command == "snapshot") {
+    return forge::runSnapshot(argc, argv);
 }
    if (command == "secret") {
     return forge::runSecret(argc, argv);
