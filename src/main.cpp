@@ -31,6 +31,7 @@
 #include "forge/commands/alias.hpp"
 #include "forge/commands/build.hpp"
 #include "forge/commands/env_check.hpp"
+#include "forge/commands/shell.hpp"
 #include "forge/commands/diff.hpp"
 #include "forge/commands/audit.hpp"
 #include "forge/commands/run.hpp"
@@ -284,6 +285,9 @@ if (command == "stats") {
 }
  if (command == "license") {
     return forge::runLicense(argc, argv);
+}
+if (command == "shell") {
+    return forge::runShell(argc, argv);
 }
     if (command == "run") {
     return forge::runRun(argc, argv);
