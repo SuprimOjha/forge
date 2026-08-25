@@ -23,6 +23,7 @@
 #include "forge/commands/fix.hpp"
 #include "forge/commands/search.hpp"
 #include "forge/commands/completion.hpp"
+#include "forge/commands/arch.hpp"
 #include "forge/commands/template.hpp"
 #include "forge/commands/bench.hpp"
 #include "forge/commands/release.hpp"
@@ -315,6 +316,9 @@ if (command == "pack") {
     }
    if (command == "release") {
     return forge::runRelease(argc, argv);
+}
+  if (command == "arch") {
+    return forge::runArch(argc, argv);
 }
 
     if (command == "project") {
