@@ -22,6 +22,7 @@
 #include "forge/commands/stats.hpp"
 #include "forge/commands/fix.hpp"
 #include "forge/commands/search.hpp"
+#include "forge/commands/dashboard.hpp"
 #include "forge/commands/completion.hpp"
 #include "forge/commands/arch.hpp"
 #include "forge/commands/template.hpp"
@@ -231,6 +232,10 @@ int main(int argc, char* argv[]) {
    if (command == "health") {
     return forge::runHealth(argc, argv);
 }
+   if (command == "dashboard") {
+    return forge::runDashboard(argc, argv);
+}
+
    if (command == "env-check") {
     return forge::runEnvCheck(argc, argv);
 }
