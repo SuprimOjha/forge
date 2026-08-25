@@ -21,6 +21,7 @@
 #include "forge/commands/deps.hpp"
 #include "forge/commands/stats.hpp"
 #include "forge/commands/fix.hpp"
+#include "forge/commands/search.hpp"
 #include "forge/commands/completion.hpp"
 #include "forge/commands/template.hpp"
 #include "forge/commands/bench.hpp"
@@ -230,6 +231,9 @@ int main(int argc, char* argv[]) {
 }
    if (command == "env-check") {
     return forge::runEnvCheck(argc, argv);
+}
+if (command == "search") {
+    return forge::runSearch(argc, argv);
 }
 if (command == "cheat") {
     return forge::runCheat(argc, argv);
