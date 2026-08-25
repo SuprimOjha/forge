@@ -21,6 +21,7 @@
 #include "forge/commands/template.hpp"
 #include "forge/commands/bench.hpp"
 #include "forge/commands/release.hpp"
+#include "forge/commands/tree.hpp"
 #include "forge/commands/alias.hpp"
 #include "forge/commands/build.hpp"
 #include "forge/commands/diff.hpp"
@@ -269,6 +270,9 @@ if (command == "stats") {
 }
     if (command == "score") {
     return forge::runScore(argc, argv);
+}
+if (command == "tree") {
+    return forge::runTree(argc, argv);
 }
    
 if (command == "pack") {
