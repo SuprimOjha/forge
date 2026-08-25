@@ -3,7 +3,7 @@
 namespace forge {
 
 /**
- * @brief Manages custom command shortcuts and aliases (~/.forge/aliases.json).
+ * @brief Manages custom command shortcuts and aliases stored in workspace configurations.
  * @param argc Argument count.
  * @param argv Argument vector.
  * @return Exit status code (0 on success, 1 on failure).
