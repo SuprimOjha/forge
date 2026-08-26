@@ -1,4 +1,3 @@
-**I only push stuffs after fixing all bugs so that don't worry while cloning this repo, just hit up a star ⭐ if you liked this project** 
 # Forge
 
 **Developer Project Diagnostics & Repair CLI**
