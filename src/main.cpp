@@ -11,6 +11,7 @@
 #include "forge/commands/profile.hpp"
 #include "forge/commands/request.hpp"
 #include "forge/commands/todo.hpp"
+#include "forge/commands/package.hpp"
 #include "forge/commands/health.hpp"
 #include "forge/commands/parallel.hpp"
 #include "forge/commands/graph.hpp"
@@ -299,6 +300,9 @@ if (command == "shell") {
 }
     if (command == "template") {
     return forge::runTemplate(argc, argv);
+}
+if (command == "package") {
+    return forge::runPackage(argc, argv);
 }
     if (command == "diff") {
     return forge::runDiff(argc, argv);
