@@ -37,6 +37,7 @@
 #include "forge/commands/build.hpp"
 #include "forge/commands/env_check.hpp"
 #include "forge/commands/shell.hpp"
+#include "forge/commands/release_notes.hpp"
 #include "forge/commands/diff.hpp"
 #include "forge/commands/audit.hpp"
 #include "forge/commands/run.hpp"
@@ -285,6 +286,9 @@ if (command == "stats") {
 }
    if (command == "archive") {
     return forge::runArchive(argc, argv);
+}
+if (command == "release-notes") {
+    return forge::runReleaseNotes(argc, argv);
 }
 if (command == "metrics") {
     return forge::runMetrics(argc, argv);
