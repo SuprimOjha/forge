@@ -30,6 +30,7 @@ add_executable(forge
     src/commands/health.cpp
     src/commands/arch.cpp
     src/commands/dashboard.cpp
+    src/commands/package.cpp
     src/commands/shell.cpp
     src/commands/cheat.cpp
     src/commands/search.cpp
