@@ -1,10 +1,13 @@
 #include "forge/commands/bench.hpp"
-#include "forge/core/process_runner.hpp"
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include <chrono>
+#include <cmath>
+#include <numeric>
 #include <iomanip>
+#include <cstdlib>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -32,14 +35,18 @@ void enableConsoleEncoding() {
 void printBenchHelp() {
     std::cout
         << "\n"
-        << "Forge Benchmark Tool\n\n"
+        << "Forge Command Performance Benchmark\n\n"
 
         << "Usage:\n"
-        << "  forge bench <command>\n\n"
+        << "  forge bench \"<command>\" [options]\n\n"
+
+        << "Options:\n"
+        << "  -n, --runs <count>    Number of iterations [default: 5]\n"
+        << "  -h, --help            Show this help message\n\n"
 
         << "Examples:\n"
-        << "  forge bench forge build\n"
-        << "  forge bench forge check\n\n";
+        << "  forge bench \"forge doctor\"\n"
+        << "  forge bench \"forge health\" -n 10\n";
 }
 
 } // anonymous namespace
@@ -49,43 +56,70 @@ int runBench(int argc, char* argv[]) {
 
     if (argc < 3) {
         printBenchHelp();
-        return 1;
+        return 0;
     }
 
-    // Reconstruct command string from arguments starting at argv[2]
-    std::string targetCommand = argv[2];
+    std::string targetCmd = argv[2];
+    if (targetCmd == "-h" || targetCmd == "--help") {
+        printBenchHelp();
+        return 0;
+    }
+
+    int runs = 5;
     for (int i = 3; i < argc; ++i) {
-        targetCommand += " ";
-        targetCommand += argv[i];
+        std::string arg = argv[i];
+        if ((arg == "-n" || arg == "--runs") && i + 1 < argc) {
+            runs = std::stoi(argv[++i]);
+        }
     }
 
-    std::cout << "\nForge Command Benchmarker\n";
-    std::cout << "--------------------------------------------\n\n";
-    std::cout << "  [*] Benchmarking target: " << targetCommand << "\n\n";
+    if (runs <= 0) runs = 1;
 
-    auto start = std::chrono::high_resolution_clock::now();
+    std::cout << "\nForge Subcommand Performance Benchmark\n";
+    std::cout << "--------------------------------------------\n";
+    std::cout << "  Benchmark Target : \"" << targetCmd << "\"\n";
+    std::cout << "  Iterations       : " << runs << "\n\n";
 
-    ProcessResult result = ProcessRunner::run(targetCommand);
+    std::vector<double> timings;
+    timings.reserve(runs);
 
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> durationMs = end - start;
+    for (int i = 1; i <= runs; ++i) {
+        auto start = std::chrono::high_resolution_clock::now();
 
-    std::cout << "  Output:\n";
-    std::cout << "  ------------------------------------------\n";
-    if (!result.stdOut.empty()) {
-        std::cout << result.stdOut << "\n";
+#ifdef _WIN32
+        std::string suppressedCmd = targetCmd + " > NUL 2>&1";
+#else
+        std::string suppressedCmd = targetCmd + " > /dev/null 2>&1";
+#endif
+
+        int status = std::system(suppressedCmd.c_str());
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+        timings.push_back(elapsed.count());
+
+        std::cout << "  Run #" << i << ": " << std::fixed << std::setprecision(2) << elapsed.count() << " ms"
+                  << (status == 0 ? " (OK)" : " (FAILED)") << "\n";
     }
-    if (!result.stdErr.empty()) {
-        std::cerr << result.stdErr << "\n";
+
+    double sum = std::accumulate(timings.begin(), timings.end(), 0.0);
+    double mean = sum / timings.size();
+
+    double sqSum = 0.0;
+    for (double t : timings) {
+        sqSum += (t - mean) * (t - mean);
     }
-    std::cout << "  ------------------------------------------\n\n";
+    double stdDev = std::sqrt(sqSum / timings.size());
 
-    std::cout << "  Benchmark Summary:\n";
-    std::cout << "    Exit Code:     " << result.exitCode << "\n";
-    std::cout << "    Execution Time:" << std::fixed << std::setprecision(2) << durationMs.count() << " ms (" << (durationMs.count() / 1000.0) << " s)\n";
-    std::cout << "    Status:        " << (result.exitCode == 0 ? "[SUCCESS]" : "[FAILED]") << "\n\n";
+    auto minMax = std::minmax_element(timings.begin(), timings.end());
 
-    return result.exitCode;
+    std::cout << "\n--------------------------------------------\n";
+    std::cout << "  Benchmark Execution Metrics Summary:\n";
+    std::cout << "  • Mean Duration : " << std::fixed << std::setprecision(2) << mean << " ms\n";
+    std::cout << "  • Min / Max     : " << *minMax.first << " ms / " << *minMax.second << " ms\n";
+    std::cout << "  • Std Dev       : ±" << stdDev << " ms\n\n";
+
+    return 0;
 }
 
 } // namespace forge
