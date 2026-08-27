@@ -31,9 +31,6 @@ add_executable(forge
     src/commands/arch.cpp
     src/commands/dashboard.cpp
     src/commands/package.cpp
-    src/commands/build_graph.cpp
-    src/commands/metrics.cpp
-    src/commands/strip.cpp
     src/commands/shell.cpp
     src/commands/cheat.cpp
     src/commands/search.cpp
