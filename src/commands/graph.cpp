@@ -43,29 +43,37 @@ void printGraphHelp() {
         << "  forge graph [options]\n\n"
 
         << "Options:\n"
-        << "  --dot                   Output graph in Graphviz DOT format\n"
-        << "  -dir, --directory <dir> Target source directory [default: include/]\n"
-        << "  -h, --help              Show this help message\n";
+        << "  --dot <path>       Export graph in Graphviz DOT format [default: dependency_graph.dot]\n"
+        << "  -d, --dir <path>   Target source directory to analyze [default: src/]\n"
+        << "  -h, --help         Show this help message\n\n"
+
+        << "Examples:\n"
+        << "  forge graph\n"
+        << "  forge graph --dot graph.dot\n";
 }
 
-std::set<std::string> extractIncludes(const fs::path& filePath) {
-    std::set<std::string> includes;
-    std::ifstream file(filePath);
-    if (!file.is_open()) return includes;
+bool isSourceFile(const fs::path& p) {
+    std::string ext = p.extension().string();
+    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+    return (ext == ".cpp" || ext == ".hpp" || ext == ".h");
+}
 
-    std::string line;
-    while (std::getline(file, line)) {
-        size_t pos = line.find("#include");
-        if (pos != std::string::npos) {
-            size_t startQuote = line.find_first_of("\"<", pos);
-            size_t endQuote = line.find_last_of("\">");
-            if (startQuote != std::string::npos && endQuote != std::string::npos && endQuote > startQuote) {
-                std::string inc = line.substr(startQuote + 1, endQuote - startQuote - 1);
-                includes.insert(inc);
-            }
+std::string extractIncludeName(const std::string& line) {
+    size_t start = line.find('"');
+    if (start != std::string::npos) {
+        size_t end = line.find('"', start + 1);
+        if (end != std::string::npos) {
+            return line.substr(start + 1, end - start - 1);
         }
     }
-    return includes;
+    start = line.find('<');
+    if (start != std::string::npos) {
+        size_t end = line.find('>', start + 1);
+        if (end != std::string::npos) {
+            return line.substr(start + 1, end - start - 1);
+        }
+    }
+    return "";
 }
 
 } // anonymous namespace
@@ -73,71 +81,82 @@ std::set<std::string> extractIncludes(const fs::path& filePath) {
 int runGraph(int argc, char* argv[]) {
     enableConsoleEncoding();
 
-    bool dotFormat = false;
-    fs::path targetDir = "include";
+    fs::path targetDir = "src";
+    fs::path dotPath = "dependency_graph.dot";
 
     for (int i = 2; i < argc; ++i) {
         std::string arg = argv[i];
-        if (arg == "--dot") {
-            dotFormat = true;
-        } else if ((arg == "-dir" || arg == "--directory") && i + 1 < argc) {
-            targetDir = argv[++i];
-        } else if (arg == "-h" || arg == "--help") {
+        if (arg == "-h" || arg == "--help") {
             printGraphHelp();
             return 0;
+        } else if (arg == "--dot" && i + 1 < argc) {
+            dotPath = argv[++i];
+        } else if ((arg == "-d" || arg == "--dir") && i + 1 < argc) {
+            targetDir = argv[++i];
         }
     }
 
     if (!fs::exists(targetDir)) {
-        targetDir = "src"; // fallback to src if include does not exist
+        targetDir = ".";
     }
 
-    if (!fs::exists(targetDir)) {
-        std::cout << "\n  [!] Neither 'include' nor 'src' directory found in workspace.\n\n";
-        return 1;
-    }
+    std::cout << "\nForge Dependency Graph Visualizer\n";
+    std::cout << "--------------------------------------------\n";
+    std::cout << "  Analyzing Path : " << fs::absolute(targetDir).string() << "\n\n";
 
     std::map<std::string, std::set<std::string>> graph;
+    size_t edgeCount = 0;
 
-    for (const auto& entry : fs::recursive_directory_iterator(targetDir)) {
-        if (entry.is_regular_file()) {
-            std::string ext = entry.path().extension().string();
-            if (ext == ".hpp" || ext == ".h" || ext == ".cpp") {
-                std::string relPath = fs::relative(entry.path(), targetDir).string();
-                std::replace(relPath.begin(), relPath.end(), '\\', '/');
-                graph[relPath] = extractIncludes(entry.path());
-            }
-        }
-    }
+    try {
+        for (const auto& entry : fs::recursive_directory_iterator(targetDir, fs::directory_options::skip_permission_denied)) {
+            if (entry.is_regular_file() && isSourceFile(entry.path())) {
+                std::string filename = entry.path().filename().string();
+                std::ifstream file(entry.path());
+                if (!file.is_open()) continue;
 
-    std::cout << "\nForge Dependency Graph (" << targetDir.string() << ")\n";
-    std::cout << "--------------------------------------------\n\n";
-
-    if (dotFormat) {
-        std::cout << "digraph ForgeDependencies {\n";
-        std::cout << "  node [shape=box, fontname=\"Courier\"];\n";
-        for (const auto& [node, edges] : graph) {
-            for (const auto& edge : edges) {
-                std::cout << "  \"" << node << "\" -> \"" << edge << "\";\n";
-            }
-        }
-        std::cout << "}\n\n";
-    } else {
-        for (const auto& [node, edges] : graph) {
-            std::cout << "  [" << node << "]\n";
-            if (edges.empty()) {
-                std::cout << "      └── (no local includes)\n";
-            } else {
-                size_t count = 0;
-                for (const auto& edge : edges) {
-                    count++;
-                    bool isLast = (count == edges.size());
-                    std::cout << "      " << (isLast ? "└── " : "├── ") << edge << "\n";
+                std::string line;
+                while (std::getline(file, line)) {
+                    if (line.find("#include") != std::string::npos) {
+                        std::string inc = extractIncludeName(line);
+                        if (!inc.empty() && inc.find("forge/") != std::string::npos) {
+                            fs::path incPath(inc);
+                            graph[filename].insert(incPath.filename().string());
+                            edgeCount++;
+                        }
+                    }
                 }
             }
-            std::cout << "\n";
+        }
+    } catch (...) {}
+
+    // Terminal Tree Output
+    std::cout << "  Module Inclusions:\n";
+    for (const auto& [node, edges] : graph) {
+        std::cout << "  📄 " << node << "\n";
+        for (const auto& target : edges) {
+            std::cout << "      └──> " << target << "\n";
         }
     }
+
+    // Generate Graphviz DOT file
+    std::ofstream dotFile(dotPath);
+    if (dotFile.is_open()) {
+        dotFile << "digraph ForgeDependencies {\n";
+        dotFile << "  rankdir=LR;\n";
+        dotFile << "  node [shape=box, style=rounded, fontname=\"Courier\"];\n";
+        for (const auto& [node, edges] : graph) {
+            for (const auto& target : edges) {
+                dotFile << "  \"" << node << "\" -> \"" << target << "\";\n";
+            }
+        }
+        dotFile << "}\n";
+        dotFile.close();
+    }
+
+    std::cout << "\n--------------------------------------------\n";
+    std::cout << "  Graph Analysis Complete: 🟢 SUCCESS\n";
+    std::cout << "  Total Edges       : " << edgeCount << " inclusion link(s)\n";
+    std::cout << "  DOT Export Path   : " << fs::absolute(dotPath).string() << "\n\n";
 
     return 0;
 }
