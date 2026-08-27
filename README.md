@@ -4,7 +4,7 @@
 
 Forge is an open-source, high-performance C++ developer toolchain CLI engineered to analyze software projects, automate build pipelines, diagnose workspace health, and streamline developer workflows across Windows, Linux, and macOS.
 
-> **Current Release: v1.0.0 — Production Release (90-Day Challenge Complete)**
+> **Current Release: v1.0.0 - Production Release (90-Day Challenge Complete)**
 
 ---
 
