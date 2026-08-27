@@ -32,6 +32,7 @@ add_executable(forge
     src/commands/dashboard.cpp
     src/commands/package.cpp
     src/commands/build_graph.cpp
+    src/commands/metrics.cpp
     src/commands/shell.cpp
     src/commands/cheat.cpp
     src/commands/search.cpp

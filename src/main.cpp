@@ -30,6 +30,7 @@
 #include "forge/commands/template.hpp"
 #include "forge/commands/bench.hpp"
 #include "forge/commands/release.hpp"
+#include "forge/commands/metrics.hpp"
 #include "forge/commands/tree.hpp"
 #include "forge/commands/alias.hpp"
 #include "forge/commands/build.hpp"
@@ -280,6 +281,9 @@ if (command == "stats") {
 }
    if (command == "archive") {
     return forge::runArchive(argc, argv);
+}
+if (command == "metrics") {
+    return forge::runMetrics(argc, argv);
 }
     if (command == "graph") {
     return forge::runGraph(argc, argv);
