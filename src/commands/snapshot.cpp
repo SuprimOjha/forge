@@ -1,7 +1,6 @@
 #include "forge/commands/snapshot.hpp"
 
 #include <iostream>
-#include <fstream>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -37,18 +36,21 @@ void enableConsoleEncoding() {
 void printSnapshotHelp() {
     std::cout
         << "\n"
-        << "Forge Workspace Snapshot & Archival Generator\n\n"
+        << "Forge Workspace Snapshot & Restore Manager\n\n"
 
         << "Usage:\n"
-        << "  forge snapshot [options]\n\n"
+        << "  forge snapshot [subcommand] [options]\n\n"
+
+        << "Subcommands:\n"
+        << "  create              Create a new timestamped workspace snapshot [default]\n"
+        << "  list                List all available workspace snapshots\n"
 
         << "Options:\n"
-        << "  -o, --output <dir>  Output directory for snapshots [default: snapshots/]\n"
         << "  -h, --help          Show this help message\n\n"
 
         << "Examples:\n"
-        << "  forge snapshot\n"
-        << "  forge snapshot -o backups/\n";
+        << "  forge snapshot create\n"
+        << "  forge snapshot list\n";
 }
 
 std::string getCurrentTimestamp() {
@@ -59,9 +61,8 @@ std::string getCurrentTimestamp() {
     return ss.str();
 }
 
-bool shouldIgnorePath(const fs::path& p) {
-    std::string name = p.filename().string();
-    return (name == "build" || name == "dist" || name == ".git" || name == ".forge" || name == "snapshots");
+bool shouldSkip(const std::string& name) {
+    return (name == "build" || name == ".git" || name == "dist" || name == "snapshots" || name == ".forge");
 }
 
 } // anonymous namespace
@@ -69,66 +70,74 @@ bool shouldIgnorePath(const fs::path& p) {
 int runSnapshot(int argc, char* argv[]) {
     enableConsoleEncoding();
 
-    fs::path targetDir = "snapshots";
+    std::string subCmd = "create";
 
-    for (int i = 2; i < argc; ++i) {
-        std::string arg = argv[i];
+    if (argc >= 3) {
+        std::string arg = argv[2];
         if (arg == "-h" || arg == "--help") {
             printSnapshotHelp();
             return 0;
-        } else if ((arg == "-o" || arg == "--output") && i + 1 < argc) {
-            targetDir = argv[++i];
         }
+        subCmd = arg;
     }
 
-    std::string timestamp = getCurrentTimestamp();
-    fs::path snapshotFolder = targetDir / ("snapshot_" + timestamp);
+    fs::path snapshotDir = "snapshots";
 
-    std::cout << "\nForge Workspace Snapshot Generator\n";
+    if (subCmd == "list") {
+        std::cout << "\nForge Workspace Snapshots\n";
+        std::cout << "--------------------------------------------\n";
+        if (!fs::exists(snapshotDir) || fs::is_empty(snapshotDir)) {
+            std::cout << "  No snapshots found in snapshots/\n\n";
+            return 0;
+        }
+
+        for (const auto& entry : fs::directory_iterator(snapshotDir)) {
+            if (entry.is_directory()) {
+                std::cout << "  • " << entry.path().filename().string() << "\n";
+            }
+        }
+        std::cout << "\n";
+        return 0;
+    }
+
+    // Default: Create snapshot
+    std::string snapshotName = "snapshot_" + getCurrentTimestamp();
+    fs::path targetPath = snapshotDir / snapshotName;
+
+    std::cout << "\nForge Workspace Snapshot Manager\n";
     std::cout << "--------------------------------------------\n";
-    std::cout << "  Creating snapshot at: " << fs::absolute(snapshotFolder).string() << "\n\n";
+    std::cout << "  Creating Snapshot : " << snapshotName << "\n";
+    std::cout << "  Destination       : " << fs::absolute(targetPath).string() << "\n\n";
 
-    size_t filesCopied = 0;
-    uintmax_t totalBytes = 0;
+    size_t fileCount = 0;
 
     try {
-        fs::create_directories(snapshotFolder);
-
         for (const auto& entry : fs::recursive_directory_iterator(".", fs::directory_options::skip_permission_denied)) {
-            const auto& path = entry.path();
+            fs::path rel = fs::relative(entry.path(), ".");
+            std::string rootFolder = rel.begin() != rel.end() ? rel.begin()->string() : "";
 
-            bool skip = false;
-            for (const auto& part : path) {
-                if (shouldIgnorePath(part)) {
-                    skip = true;
-                    break;
-                }
+            if (shouldSkip(rootFolder)) {
+                continue;
             }
-            if (skip) continue;
 
-            if (fs::is_regular_file(path)) {
-                fs::path relPath = fs::relative(path, ".");
-                fs::path destPath = snapshotFolder / relPath;
+            fs::path dest = targetPath / rel;
 
-                fs::create_directories(destPath.parent_path());
-                fs::copy_file(path, destPath, fs::copy_options::overwrite_existing);
-
-                filesCopied++;
-                totalBytes += fs::file_size(path);
+            if (entry.is_directory()) {
+                fs::create_directories(dest);
+            } else if (entry.is_regular_file()) {
+                fs::create_directories(dest.parent_path());
+                fs::copy_file(entry.path(), dest, fs::copy_options::overwrite_existing);
+                fileCount++;
             }
         }
-
-        double sizeMB = static_cast<double>(totalBytes) / (1024.0 * 1024.0);
-
-        std::cout << "  [+] Copied Files  : " << filesCopied << "\n";
-        std::cout << "  [+] Archive Size  : " << sizeMB << " MB\n";
-        std::cout << "--------------------------------------------\n";
-        std::cout << "  Snapshot Created Successfully!\n\n";
-
-    } catch (const std::exception& ex) {
-        std::cerr << "  [!] Snapshot failed: " << ex.what() << "\n\n";
+    } catch (const std::exception& e) {
+        std::cerr << "  [!] Copy Error: " << e.what() << "\n";
         return 1;
     }
+
+    std::cout << "--------------------------------------------\n";
+    std::cout << "  Snapshot Status : 🟢 SUCCESS\n";
+    std::cout << "  Files Archived  : " << fileCount << " source file(s)\n\n";
 
     return 0;
 }
