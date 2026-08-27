@@ -6,6 +6,7 @@
 #include "forge/commands/project.hpp"
 #include "forge/commands/score.hpp"
 #include "forge/commands/secret.hpp"
+#include "forge/commands/strip.hpp"
 #include "forge/commands/sweep.hpp"
 #include "forge/commands/pack.hpp"
 #include "forge/commands/profile.hpp"
@@ -266,6 +267,9 @@ if (command == "cheat") {
    if (command == "plugin") {
     return forge::runPlugin(argc, argv);
 }
+  if (command == "strip") {
+    return forge::runStrip(argc, argv);
+}
 if (command == "clean") {
     std::vector<std::string> extraArgs(argv + 2, argv + argc);
     return forge::runClean(extraArgs);
@@ -285,6 +289,7 @@ if (command == "stats") {
 if (command == "metrics") {
     return forge::runMetrics(argc, argv);
 }
+
     if (command == "graph") {
     return forge::runGraph(argc, argv);
 }
