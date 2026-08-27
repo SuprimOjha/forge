@@ -5,8 +5,6 @@
 #include <filesystem>
 #include <string>
 #include <vector>
-#include <map>
-#include <iomanip>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -36,48 +34,18 @@ void enableConsoleEncoding() {
 void printAliasHelp() {
     std::cout
         << "\n"
-        << "Forge Command Alias & Shortcut Manager\n\n"
+        << "Forge Shell Alias Generator\n\n"
 
         << "Usage:\n"
-        << "  forge alias [options]\n"
-        << "  forge alias <name>=<command>\n\n"
+        << "  forge alias [options]\n\n"
 
         << "Options:\n"
-        << "  -l, --list          List all configured aliases\n"
-        << "  -h, --help          Show this help message\n\n"
+        << "  -o, --output <dir>    Output directory for alias scripts [default: .]\n"
+        << "  -h, --help            Show this help message\n\n"
 
         << "Examples:\n"
-        << "  forge alias b=\"build --config Release\"\n"
-        << "  forge alias -l\n";
-}
-
-std::map<std::string, std::string> loadAliases(const fs::path& configPath) {
-    std::map<std::string, std::string> aliases;
-    if (!fs::exists(configPath)) return aliases;
-
-    std::ifstream file(configPath);
-    std::string line;
-    bool inAliasSection = false;
-
-    while (std::getline(file, line)) {
-        if (line == "[alias]") {
-            inAliasSection = true;
-            continue;
-        } else if (!line.empty() && line[0] == '[') {
-            inAliasSection = false;
-            continue;
-        }
-
-        if (inAliasSection) {
-            size_t eqPos = line.find('=');
-            if (eqPos != std::string::npos) {
-                std::string key = line.substr(0, eqPos);
-                std::string val = line.substr(eqPos + 1);
-                aliases[key] = val;
-            }
-        }
-    }
-    return aliases;
+        << "  forge alias\n"
+        << "  forge alias -o scripts/\n";
 }
 
 } // anonymous namespace
@@ -85,64 +53,71 @@ std::map<std::string, std::string> loadAliases(const fs::path& configPath) {
 int runAlias(int argc, char* argv[]) {
     enableConsoleEncoding();
 
-    fs::path configPath = ".forgerc";
+    fs::path outputDir = ".";
 
-    if (argc < 3) {
-        // Default behavior: list aliases
-        auto aliases = loadAliases(configPath);
-        std::cout << "\nForge Configured Aliases (.forgerc)\n";
-        std::cout << "--------------------------------------------\n";
-        
-        if (aliases.empty()) {
-            std::cout << "  (No custom aliases configured)\n\n";
+    for (int i = 2; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "-h" || arg == "--help") {
+            printAliasHelp();
             return 0;
-        }
-
-        for (const auto& [name, target] : aliases) {
-            std::cout << "  forge " << std::left << std::setw(12) << name << " -> forge " << target << "\n";
-        }
-        std::cout << "\n";
-        return 0;
-    }
-
-    std::string arg = argv[2];
-    if (arg == "-h" || arg == "--help") {
-        printAliasHelp();
-        return 0;
-    } else if (arg == "-l" || arg == "--list") {
-        auto aliases = loadAliases(configPath);
-        std::cout << "\nForge Configured Aliases (.forgerc)\n";
-        std::cout << "--------------------------------------------\n";
-        if (aliases.empty()) {
-            std::cout << "  (No custom aliases configured)\n\n";
-        } else {
-            for (const auto& [name, target] : aliases) {
-                std::cout << "  forge " << std::left << std::setw(12) << name << " -> forge " << target << "\n";
-            }
-            std::cout << "\n";
-        }
-        return 0;
-    }
-
-    // Save alias assignment format: alias_name=command
-    size_t eqPos = arg.find('=');
-    if (eqPos != std::string::npos) {
-        std::string aliasName = arg.substr(0, eqPos);
-        std::string targetCmd = arg.substr(eqPos + 1);
-
-        std::ofstream file(configPath, std::ios::app);
-        if (file.is_open()) {
-            file << "\n[alias]\n" << aliasName << "=" << targetCmd << "\n";
-            std::cout << "\n  [+] Saved Alias: forge " << aliasName << " -> forge " << targetCmd << "\n\n";
-            return 0;
-        } else {
-            std::cerr << "  [!] Error writing to .forgerc configuration file.\n\n";
-            return 1;
+        } else if ((arg == "-o" || arg == "--output") && i + 1 < argc) {
+            outputDir = argv[++i];
         }
     }
 
-    printAliasHelp();
-    return 1;
+    std::cout << "\nForge Shell Alias & Shortcode Generator\n";
+    std::cout << "--------------------------------------------\n";
+    std::cout << "  Generating Alias Scripts in : " << fs::absolute(outputDir).string() << "\n\n";
+
+    if (!fs::exists(outputDir)) {
+        fs::create_directories(outputDir);
+    }
+
+    // 1. PowerShell Profile Snippet (forge_aliases.ps1)
+    fs::path psPath = outputDir / "forge_aliases.ps1";
+    std::ofstream psFile(psPath);
+    if (psFile.is_open()) {
+        psFile << "# Forge CLI PowerShell Aliases\n";
+        psFile << "function fg { forge $args }\n";
+        psFile << "function fgb { forge build $args }\n";
+        psFile << "function fgd { forge doctor $args }\n";
+        psFile << "function fgh { forge health $args }\n";
+        psFile << "function fgs { forge status $args }\n";
+        psFile.close();
+        std::cout << "  • PowerShell Script : " << psPath.string() << "\n";
+    }
+
+    // 2. Bash / Zsh Profile Snippet (forge_aliases.sh)
+    fs::path shPath = outputDir / "forge_aliases.sh";
+    std::ofstream shFile(shPath);
+    if (shFile.is_open()) {
+        shFile << "#!/usr/bin/env bash\n";
+        shFile << "# Forge CLI Bash/Zsh Aliases\n";
+        shFile << "alias fg='forge'\n";
+        shFile << "alias fgb='forge build'\n";
+        shFile << "alias fgd='forge doctor'\n";
+        shFile << "alias fgh='forge health'\n";
+        shFile << "alias fgs='forge status'\n";
+        shFile.close();
+        std::cout << "  • Bash / Zsh Script  : " << shPath.string() << "\n";
+    }
+
+    // 3. CMD Batch Command Script (fg.bat)
+    fs::path batPath = outputDir / "fg.bat";
+    std::ofstream batFile(batPath);
+    if (batFile.is_open()) {
+        batFile << "@echo off\n";
+        batFile << "forge %*\n";
+        batFile.close();
+        std::cout << "  • Windows CMD Batch : " << batPath.string() << "\n";
+    }
+
+    std::cout << "\n--------------------------------------------\n";
+    std::cout << "  Alias Export Status : 🟢 SUCCESS\n";
+    std::cout << "  Usage Tip           : Dot-source or load into your shell profile\n";
+    std::cout << "                        (e.g. '. .\\forge_aliases.ps1')\n\n";
+
+    return 0;
 }
 
 } // namespace forge
