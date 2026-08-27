@@ -12,6 +12,7 @@
 #include "forge/commands/request.hpp"
 #include "forge/commands/todo.hpp"
 #include "forge/commands/package.hpp"
+#include "forge/commands/build_graph.hpp"
 #include "forge/commands/health.hpp"
 #include "forge/commands/parallel.hpp"
 #include "forge/commands/graph.hpp"
@@ -226,6 +227,9 @@ int main(int argc, char* argv[]) {
 }
     if (command == "sweep") {
     return forge::runSweep(argc, argv);
+}   
+if (command == "build-graph") {
+    return forge::runBuildGraph(argc, argv);
 }
     if (command == "bench") {
     return forge::runBench(argc, argv);
