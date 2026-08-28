@@ -1,4 +1,3 @@
-## Soon to be released on windows package installer..!
 # Forge CLI
 
 **Modular C++ Developer Diagnostics, Build System & Project Management Engine**
@@ -25,9 +24,6 @@ Forge operates as a central developer command center. Built from the ground up i
 
 ## Installation
 
-### Method 1: Windows Package Manager (WinGet)
+### Method : Download Binary Assets From The Release.
 
-Install the official package directly from your terminal:
 
-```powershell
-winget install SuprimOjha.Forge
