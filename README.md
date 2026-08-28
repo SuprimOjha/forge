@@ -1,4 +1,4 @@
-## Soon to be released on windows package installer.!
+## Soon to be released on windows package installer..!
 # Forge CLI
 
 **Modular C++ Developer Diagnostics, Build System & Project Management Engine**
