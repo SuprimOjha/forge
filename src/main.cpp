@@ -51,28 +51,26 @@
 #include <iostream>
 
 void printHelp() {
-
     std::cout
         << "\n"
         << "Forge - Developer Workspace CLI\n\n"
-
         << "Usage:\n"
         << "  forge <command> [options]\n\n"
-
-        << "Commands:\n"
-        << "  doctor     Check development environment\n"
-        << "  version    Show Forge version\n"
-        << "  config     Manage Forge configuration\n"
-        << "  env        Show development environment\n"
-        << "  check      Check if development environment is ready\n"
-        << "  project    Detect the current project\n"
-        << "  fix        Run automated repair actions\n"
-        << "  build      Build current project\n"
-        << "  help       Show this help message\n\n"
-
+        << "Core Commands:\n"
+        << "  project     Detect and manage current project\n"
+        << "  fix         Run automated repair actions\n"
+        << "  build       Build current project\n"
+        << "  clean       Remove build artifacts\n"
+        << "  doctor      Check development environment\n"
+        << "  status      Show repository and project status\n"
+        << "  init        Initialize a new workspace or config\n\n"
+        << "Analysis & Inspection:\n"
+        << "  audit, health, metrics, score, stats, tree, deps, graph\n\n"
+        << "Utilities & Tools:\n"
+        << "  archive, bench, cheat, search, secret, todo, snapshot\n\n"
         << "Global Options:\n"
-        << "  -h, --help       Show help message\n"
-        << "  --version        Show Forge version\n";
+        << "  -h, --help    Show help message\n"
+        << "  --version     Show Forge version\n\n";
 }
 
 void printDoctorHelp() {
