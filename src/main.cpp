@@ -53,24 +53,206 @@
 void printHelp() {
     std::cout
         << "\n"
-        << "Forge - Developer Workspace CLI\n\n"
+        << "Forge - Developer Workspace CLI\n"
+        << "============================================\n\n"
+
         << "Usage:\n"
         << "  forge <command> [options]\n\n"
-        << "Core Commands:\n"
-        << "  project     Detect and manage current project\n"
-        << "  fix         Run automated repair actions\n"
-        << "  build       Build current project\n"
-        << "  clean       Remove build artifacts\n"
-        << "  doctor      Check development environment\n"
-        << "  status      Show repository and project status\n"
-        << "  init        Initialize a new workspace or config\n\n"
-        << "Analysis & Inspection:\n"
-        << "  audit, health, metrics, score, stats, tree, deps, graph\n\n"
-        << "Utilities & Tools:\n"
-        << "  archive, bench, cheat, search, secret, todo, snapshot\n\n"
-        << "Global Options:\n"
-        << "  -h, --help    Show help message\n"
-        << "  --version     Show Forge version\n\n";
+
+        << "Forge helps developers inspect, diagnose, build,\n"
+        << "maintain, analyze and manage software projects.\n\n"
+
+        << "CORE PROJECT COMMANDS\n"
+        << "--------------------------------------------\n"
+        << "  project       Detect and analyze the current project\n"
+        << "                Usage: forge project\n\n"
+
+        << "  init          Initialize a new Forge workspace/config\n"
+        << "                Usage: forge init [options]\n\n"
+
+        << "  status        Show repository and project status\n"
+        << "                Usage: forge status [options]\n\n"
+
+        << "  build         Build the current project automatically\n"
+        << "                Usage: forge build [options]\n\n"
+
+        << "  clean         Remove build artifacts and generated files\n"
+        << "                Usage: forge clean [options]\n\n"
+
+        << "  fix           Detect problems and offer automated fixes\n"
+        << "                Usage: forge fix\n\n"
+
+        << "  run           Run project commands through Forge\n"
+        << "                Usage: forge run [options]\n\n"
+
+
+        << "DIAGNOSTICS & HEALTH\n"
+        << "--------------------------------------------\n"
+        << "  doctor        Check development environment and tools\n"
+        << "                Usage: forge doctor\n\n"
+
+        << "  health        Analyze overall project health\n"
+        << "                Usage: forge health [options]\n\n"
+
+        << "  check         Check whether the environment is ready\n"
+        << "                Usage: forge check\n\n"
+
+        << "  env           Show detected development environment\n"
+        << "                Usage: forge env [options]\n\n"
+
+        << "  env-check     Validate environment requirements\n"
+        << "                Usage: forge env-check [options]\n\n"
+
+        << "  audit         Audit project configuration and structure\n"
+        << "                Usage: forge audit [options]\n\n"
+
+        << "  score         Calculate project health score\n"
+        << "                Usage: forge score [options]\n\n"
+
+        << "  metrics       Show project metrics and measurements\n"
+        << "                Usage: forge metrics [options]\n\n"
+
+        << "  stats         Show project statistics\n"
+        << "                Usage: forge stats [options]\n\n"
+
+
+        << "DEPENDENCY & CODE ANALYSIS\n"
+        << "--------------------------------------------\n"
+        << "  deps          Analyze dependencies and module coupling\n"
+        << "                Usage: forge deps [options]\n\n"
+
+        << "  graph         Analyze project dependency relationships\n"
+        << "                Usage: forge graph [options]\n\n"
+
+        << "  build-graph   Analyze build dependencies\n"
+        << "                Usage: forge build-graph [options]\n\n"
+
+        << "  tree          Display project directory structure\n"
+        << "                Usage: forge tree [options]\n\n"
+
+        << "  diff          Analyze project changes\n"
+        << "                Usage: forge diff [options]\n\n"
+
+        << "  profile       Analyze project/profile information\n"
+        << "                Usage: forge profile [options]\n\n"
+
+        << "  arch          Analyze project architecture\n"
+        << "                Usage: forge arch [options]\n\n"
+
+
+        << "PACKAGE & RELEASE TOOLS\n"
+        << "--------------------------------------------\n"
+        << "  package       Manage project packaging\n"
+        << "                Usage: forge package [options]\n\n"
+
+        << "  pack          Create project packages\n"
+        << "                Usage: forge pack [options]\n\n"
+
+        << "  archive       Archive project files\n"
+        << "                Usage: forge archive [options]\n\n"
+
+        << "  release       Manage project releases\n"
+        << "                Usage: forge release [options]\n\n"
+
+        << "  release-notes Generate release notes\n"
+        << "                Usage: forge release-notes [options]\n\n"
+
+        << "  snapshot      Create or inspect project snapshots\n"
+        << "                Usage: forge snapshot [options]\n\n"
+
+
+        << "PROJECT UTILITIES\n"
+        << "--------------------------------------------\n"
+        << "  config        Manage Forge configuration\n"
+        << "                Usage: forge config [options]\n\n"
+
+        << "  template      Manage project templates\n"
+        << "                Usage: forge template [options]\n\n"
+
+        << "  alias         Manage Forge command aliases\n"
+        << "                Usage: forge alias [options]\n\n"
+
+        << "  completion     Generate shell completion\n"
+        << "                Usage: forge completion [options]\n\n"
+
+        << "  shell         Run shell-related operations\n"
+        << "                Usage: forge shell [options]\n\n"
+
+        << "  port          Inspect or manage project ports\n"
+        << "                Usage: forge port [options]\n\n"
+
+        << "  parallel      Run supported operations in parallel\n"
+        << "                Usage: forge parallel [options]\n\n"
+
+
+        << "SECURITY & MAINTENANCE\n"
+        << "--------------------------------------------\n"
+        << "  secret        Scan or inspect project secrets\n"
+        << "                Usage: forge secret [options]\n\n"
+
+        << "  license       Inspect project licenses\n"
+        << "                Usage: forge license [options]\n\n"
+
+        << "  strip         Remove unnecessary project files\n"
+        << "                Usage: forge strip [options]\n\n"
+
+        << "  sweep         Sweep the project for unnecessary artifacts\n"
+        << "                Usage: forge sweep [options]\n\n"
+
+        << "  todo          Find and manage TODO items\n"
+        << "                Usage: forge todo [options]\n\n"
+
+
+        << "DEVELOPER TOOLS\n"
+        << "--------------------------------------------\n"
+        << "  bench         Benchmark Forge/project operations\n"
+        << "                Usage: forge bench [options]\n\n"
+
+        << "  search        Search project files and information\n"
+        << "                Usage: forge search [options]\n\n"
+
+        << "  cheat         Show Forge command cheat sheet\n"
+        << "                Usage: forge cheat [command]\n\n"
+
+        << "  dashboard     Show project dashboard\n"
+        << "                Usage: forge dashboard [options]\n\n"
+
+        << "  plugin        Manage Forge plugins\n"
+        << "                Usage: forge plugin [options]\n\n"
+
+        << "  request       Manage project requests/tasks\n"
+        << "                Usage: forge request [options]\n\n"
+
+
+        << "VERSION\n"
+        << "--------------------------------------------\n"
+        << "  version       Show Forge version information\n"
+        << "                Usage: forge version\n\n"
+
+        << "  --version     Show Forge version\n\n"
+
+
+        << "GLOBAL OPTIONS\n"
+        << "--------------------------------------------\n"
+        << "  -h, --help    Show this help message\n"
+        << "  --version     Show Forge version\n\n"
+
+
+        << "COMMAND HELP\n"
+        << "--------------------------------------------\n"
+        << "  forge <command> --help\n"
+        << "  forge <command> -h\n\n"
+
+        << "Examples:\n"
+        << "  forge project\n"
+        << "  forge doctor\n"
+        << "  forge health\n"
+        << "  forge deps\n"
+        << "  forge audit\n"
+        << "  forge fix\n"
+        << "  forge build\n"
+        << "  forge clean\n"
+        << "  forge status\n\n";
 }
 
 void printDoctorHelp() {
