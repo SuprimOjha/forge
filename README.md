@@ -281,3 +281,20 @@ forge --help
 This displays the commands available in your installed version and the options required to use them.
 
 **Forge — one CLI for project diagnostics, build workflows, and developer tooling.**
+
+
+## Documentation
+
+Forge now has a dedicated documentation set covering setup, building from source, command discovery, architecture, safety, troubleshooting, and contributing.
+
+Start at the [Documentation Index](docs/README.md), or jump directly to:
+
+- [Installation](docs/getting-started/installation.md)
+- [Build from source](docs/getting-started/build-from-source.md)
+- [Quick start](docs/getting-started/quick-start.md)
+- [Command reference](docs/commands/overview.md)
+- [Architecture overview](docs/architecture/overview.md)
+- [Contributing guide](docs/contributing.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
+For command-specific flags, always use `forge <command> --help` with the version you have installed.
